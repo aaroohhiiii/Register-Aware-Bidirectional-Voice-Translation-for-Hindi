@@ -1,0 +1,274 @@
+{
+  "schema_version": 1,
+  "status": "locked",
+  "dial_formula": "round((power + distance + context) / 3, 2)",
+  "dial_rounding_decimal_places": 2,
+  "definitions": {
+    "power": "Does the other person hold authority, status, or seniority over the speaker, such that deference is owed regardless of familiarity? 0 = no authority; 1 = high authority.",
+    "distance": "How socially unfamiliar or unrelated are the two people, independent of power? 0 = very close; 1 = complete stranger or institutional relationship.",
+    "context": "How institutional, transactional, or high-stakes is the interaction itself, independent of who the person is? 0 = casual or personal; 1 = highly institutional or high-stakes."
+  },
+  "thresholds": [
+    {
+      "tier": "Full Informal",
+      "minimum": 0.0,
+      "maximum": 0.25,
+      "minimum_inclusive": true,
+      "maximum_inclusive": false
+    },
+    {
+      "tier": "Respectful Casual",
+      "minimum": 0.25,
+      "maximum": 0.45,
+      "minimum_inclusive": true,
+      "maximum_inclusive": false
+    },
+    {
+      "tier": "Formal",
+      "minimum": 0.45,
+      "maximum": 0.65,
+      "minimum_inclusive": true,
+      "maximum_inclusive": false
+    },
+    {
+      "tier": "Full Formal",
+      "minimum": 0.65,
+      "maximum": 1.0,
+      "minimum_inclusive": true,
+      "maximum_inclusive": true
+    }
+  ],
+  "special_case_tiers": {
+    "formal_warm": {
+      "tier": "Formal-Warm",
+      "reason": "An elder relative is socially close and the interaction is low-stakes, but age and family role still require deference; threshold-only assignment would incorrectly produce Respectful Casual."
+    },
+    "reverse_formal": {
+      "tier": "Reverse Formal",
+      "reason": "In a service-worker-to-customer interaction, the speaker owes deference because the power direction is inverted, so the interaction is a distinct type rather than a point on the ordinary dial."
+    }
+  },
+  "scenarios": [
+    {
+      "id": 1,
+      "key": "friend",
+      "name": "Friend",
+      "scores": {"power": 0.0, "distance": 0.1, "context": 0.0},
+      "dial_value": 0.03,
+      "tier": "Full Informal",
+      "assignment_mode": "threshold",
+      "special_tag": null,
+      "justification": "No authority, close, purely casual."
+    },
+    {
+      "id": 2,
+      "key": "younger_sibling",
+      "name": "Younger sibling",
+      "scores": {"power": 0.0, "distance": 0.0, "context": 0.0},
+      "dial_value": 0.0,
+      "tier": "Full Informal",
+      "assignment_mode": "threshold",
+      "special_tag": null,
+      "justification": "No authority, closest possible, no stakes."
+    },
+    {
+      "id": 3,
+      "key": "spouse_partner",
+      "name": "Spouse/partner",
+      "scores": {"power": 0.0, "distance": 0.0, "context": 0.0},
+      "dial_value": 0.0,
+      "tier": "Full Informal",
+      "assignment_mode": "threshold",
+      "special_tag": null,
+      "justification": "No authority, maximally close, personal."
+    },
+    {
+      "id": 4,
+      "key": "classmate",
+      "name": "Classmate",
+      "scores": {"power": 0.1, "distance": 0.3, "context": 0.2},
+      "dial_value": 0.2,
+      "tier": "Full Informal",
+      "assignment_mode": "threshold",
+      "special_tag": null,
+      "justification": "Peer, slight unfamiliarity if not close friends, low stakes."
+    },
+    {
+      "id": 5,
+      "key": "auto_driver",
+      "name": "Auto driver",
+      "scores": {"power": 0.1, "distance": 0.6, "context": 0.3},
+      "dial_value": 0.33,
+      "tier": "Respectful Casual",
+      "assignment_mode": "threshold",
+      "special_tag": null,
+      "justification": "No real authority, stranger, brief transaction."
+    },
+    {
+      "id": 6,
+      "key": "shopkeeper",
+      "name": "Shopkeeper",
+      "scores": {"power": 0.1, "distance": 0.6, "context": 0.4},
+      "dial_value": 0.37,
+      "tier": "Respectful Casual",
+      "assignment_mode": "threshold",
+      "special_tag": null,
+      "justification": "No authority, stranger, transactional but routine."
+    },
+    {
+      "id": 7,
+      "key": "delivery_person",
+      "name": "Delivery person",
+      "scores": {"power": 0.1, "distance": 0.6, "context": 0.3},
+      "dial_value": 0.33,
+      "tier": "Respectful Casual",
+      "assignment_mode": "threshold",
+      "special_tag": null,
+      "justification": "No authority, stranger, brief and routine."
+    },
+    {
+      "id": 8,
+      "key": "colleague_peer",
+      "name": "Colleague (peer)",
+      "scores": {"power": 0.2, "distance": 0.4, "context": 0.5},
+      "dial_value": 0.37,
+      "tier": "Respectful Casual",
+      "assignment_mode": "threshold",
+      "special_tag": null,
+      "justification": "No hierarchy, moderately familiar, workplace context raises stakes slightly."
+    },
+    {
+      "id": 9,
+      "key": "stranger_directions",
+      "name": "Stranger asking directions",
+      "scores": {"power": 0.1, "distance": 0.8, "context": 0.2},
+      "dial_value": 0.37,
+      "tier": "Respectful Casual",
+      "assignment_mode": "threshold",
+      "special_tag": null,
+      "justification": "No authority, total stranger, but trivial low-stakes ask."
+    },
+    {
+      "id": 10,
+      "key": "elder_relative",
+      "name": "Grandparent/elder relative",
+      "scores": {"power": 0.7, "distance": 0.1, "context": 0.2},
+      "dial_value": 0.33,
+      "tier": "Formal-Warm",
+      "assignment_mode": "special_tag",
+      "special_tag": "formal_warm",
+      "threshold_tier_without_override": "Respectful Casual",
+      "justification": "High deference owed by age and family role, but very close with low institutional stakes; assigned by tag because the numeric threshold would understate the required deference."
+    },
+    {
+      "id": 11,
+      "key": "landlord",
+      "name": "Landlord",
+      "scores": {"power": 0.5, "distance": 0.6, "context": 0.5},
+      "dial_value": 0.53,
+      "tier": "Formal",
+      "assignment_mode": "threshold",
+      "special_tag": null,
+      "justification": "Some authority through control of housing, fairly distant, moderately transactional."
+    },
+    {
+      "id": 12,
+      "key": "bank_employee",
+      "name": "Bank employee",
+      "scores": {"power": 0.4, "distance": 0.8, "context": 0.7},
+      "dial_value": 0.63,
+      "tier": "Formal",
+      "assignment_mode": "threshold",
+      "special_tag": null,
+      "justification": "Institutional authority, stranger, high-stakes interaction involving money."
+    },
+    {
+      "id": 13,
+      "key": "receptionist",
+      "name": "Receptionist",
+      "scores": {"power": 0.3, "distance": 0.8, "context": 0.6},
+      "dial_value": 0.57,
+      "tier": "Formal",
+      "assignment_mode": "threshold",
+      "special_tag": null,
+      "justification": "Mild institutional authority, stranger, moderately formal setting."
+    },
+    {
+      "id": 14,
+      "key": "hotel_staff",
+      "name": "Hotel/front-desk staff",
+      "scores": {"power": 0.3, "distance": 0.7, "context": 0.6},
+      "dial_value": 0.53,
+      "tier": "Formal",
+      "assignment_mode": "threshold",
+      "special_tag": null,
+      "justification": "Service interaction with a stranger in an institutional setting, similar to a receptionist."
+    },
+    {
+      "id": 15,
+      "key": "boss_manager",
+      "name": "Boss/manager",
+      "scores": {"power": 0.8, "distance": 0.5, "context": 0.6},
+      "dial_value": 0.63,
+      "tier": "Formal",
+      "assignment_mode": "threshold",
+      "special_tag": null,
+      "justification": "Direct authority over the speaker combined with workplace stakes."
+    },
+    {
+      "id": 16,
+      "key": "teacher",
+      "name": "Teacher",
+      "scores": {"power": 0.9, "distance": 0.5, "context": 0.7},
+      "dial_value": 0.7,
+      "tier": "Full Formal",
+      "assignment_mode": "threshold",
+      "special_tag": null,
+      "justification": "High authority, moderate familiarity, educational stakes."
+    },
+    {
+      "id": 17,
+      "key": "doctor",
+      "name": "Doctor",
+      "scores": {"power": 0.7, "distance": 0.6, "context": 0.8},
+      "dial_value": 0.7,
+      "tier": "Full Formal",
+      "assignment_mode": "threshold",
+      "special_tag": null,
+      "justification": "Expert authority, social distance, and high health-related stakes."
+    },
+    {
+      "id": 18,
+      "key": "job_interviewer",
+      "name": "Job interviewer",
+      "scores": {"power": 0.8, "distance": 0.9, "context": 0.9},
+      "dial_value": 0.87,
+      "tier": "Full Formal",
+      "assignment_mode": "threshold",
+      "special_tag": null,
+      "justification": "High authority over the outcome, stranger, maximum stakes."
+    },
+    {
+      "id": 19,
+      "key": "police_officer",
+      "name": "Police officer",
+      "scores": {"power": 0.9, "distance": 0.7, "context": 0.9},
+      "dial_value": 0.83,
+      "tier": "Full Formal",
+      "assignment_mode": "threshold",
+      "special_tag": null,
+      "justification": "Institutional and legal authority, stranger, high-stakes interaction."
+    },
+    {
+      "id": 20,
+      "key": "customer_facing",
+      "name": "Customer (you as service worker)",
+      "scores": {"power": 0.2, "distance": 0.6, "context": 0.6},
+      "dial_value": null,
+      "tier": "Reverse Formal",
+      "assignment_mode": "special_tag",
+      "special_tag": "reverse_formal",
+      "justification": "The speaker owes deference to the customer because the ordinary power direction is inverted; assigned by interaction-type tag rather than a dial threshold."
+    }
+  ]
+}

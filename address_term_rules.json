@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "status": "draft_day_4",
+  "scope": "Hindi addressee terms by register tier and scenario",
+  "asr_reliability": {
+    "level": "low",
+    "normalization_layer_required": true,
+    "note": "Day 2 testing flagged address terms and short honorific words as the least reliably preserved parts of transcription. Runtime use must depend on the later normalization layer rather than ASR output alone."
+  },
+  "tier_rules": [
+    {
+      "tier": "Full Informal",
+      "presence_policy": "optional",
+      "generic_terms": ["{name}", "यार", "भाई"],
+      "notes": "Use a name alone or a casual vocative; do not inject one when the sentence is natural without it."
+    },
+    {
+      "tier": "Respectful Casual",
+      "presence_policy": "contextual",
+      "generic_terms": ["भैया", "भाई साहब", "दीदी"],
+      "notes": "Choose a socially appropriate term when gender/relationship is known; otherwise preserve the original wording."
+    },
+    {
+      "tier": "Formal",
+      "presence_policy": "recommended",
+      "generic_terms": ["सर", "मैडम", "जी", "{name} जी"],
+      "notes": "A formal address term is preferred but may be omitted when repeated use would sound unnatural."
+    },
+    {
+      "tier": "Full Formal",
+      "presence_policy": "required",
+      "generic_terms": ["सर", "मैडम", "जी", "{name} जी"],
+      "notes": "At least one appropriate formal address marker must be present and must not be dropped."
+    },
+    {
+      "tier": "Formal-Warm",
+      "presence_policy": "required_scenario_specific",
+      "generic_terms": [],
+      "notes": "Use the actual kinship relation plus जी; a generic formal title would lose warmth and family-role information."
+    },
+    {
+      "tier": "Reverse Formal",
+      "presence_policy": "required",
+      "generic_terms": ["सर", "मैडम", "जी", "{name} जी"],
+      "notes": "Use the formal term from the service worker's side toward the customer."
+    }
+  ],
+  "scenario_overrides": {
+    "auto_driver": {
+      "terms": ["भैया", "भाई साहब", "दीदी"],
+      "presence_policy": "contextual"
+    },
+    "teacher": {
+      "terms": ["सर", "मैडम", "अध्यापक जी", "अध्यापिका जी"],
+      "presence_policy": "required"
+    },
+    "doctor": {
+      "terms": ["डॉक्टर साहब", "डॉक्टर मैडम", "डॉक्टर जी"],
+      "presence_policy": "required"
+    },
+    "elder_relative": {
+      "terms": ["दादी जी", "नानी जी", "दादा जी", "नाना जी", "बुआ जी", "मौसी जी", "चाचा जी", "मामा जी"],
+      "presence_policy": "required_scenario_specific",
+      "selection_note": "Select the true kinship relation; never guess one from gender alone."
+    },
+    "customer_facing": {
+      "terms": ["सर", "मैडम", "जी", "{name} जी"],
+      "presence_policy": "required"
+    }
+  }
+}
+

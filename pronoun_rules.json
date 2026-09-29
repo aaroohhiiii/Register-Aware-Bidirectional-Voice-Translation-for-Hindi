@@ -1,0 +1,153 @@
+{
+  "schema_version": 2,
+  "status": "closed_step_6_2",
+  "scope": "Hindi second-person pronouns",
+  "notes": [
+    "The table defines one deterministic target paradigm per register tier.",
+    "Possessives agree with the possessed noun, not with the addressee.",
+    "Formal, Full Formal, Formal-Warm, and Reverse Formal share the आप paradigm; later verb, imperative, and honorific rules distinguish those tiers.",
+    "तू is an intimate default for Full Informal and can sound rude outside genuinely close relationships; scenario selection must therefore happen before transformation.",
+    "Postpositional forms cover से (instrumental/ablative/comitative), में (interior locative), पर/पे (surface locative), and तक (terminative).",
+    "Multiword comitative, benefactive, proximity, and topic forms such as आपके साथ, आपके लिए, आपके पास, and आपके बारे में are already generated through masculine_plural_or_oblique plus an unchanged postposition."
+  ],
+  "tiers": [
+    {
+      "tier": "Full Informal",
+      "paradigm": "tu",
+      "forms": {
+        "subject": "तू",
+        "possessive": {
+          "masculine_singular_direct": "तेरा",
+          "feminine_any_number": "तेरी",
+          "masculine_plural_or_oblique": "तेरे"
+        },
+        "dative": {
+          "canonical": "तुझे",
+          "accepted_variant": "तुझको"
+        },
+        "ergative": "तूने",
+        "postpositional": {
+          "instrumental_ablative": {"canonical": "तुझसे", "accepted_variants": ["तुझ से"]},
+          "locative_in": {"canonical": "तुझमें", "accepted_variants": ["तुझ में"]},
+          "locative_on": {"canonical": "तुझ पर", "accepted_variants": ["तुझपर", "तुझ पे", "तुझपे"]},
+          "terminative": {"canonical": "तुझ तक", "accepted_variants": ["तुझतक"]}
+        }
+      }
+    },
+    {
+      "tier": "Respectful Casual",
+      "paradigm": "tum",
+      "forms": {
+        "subject": "तुम",
+        "possessive": {
+          "masculine_singular_direct": "तुम्हारा",
+          "feminine_any_number": "तुम्हारी",
+          "masculine_plural_or_oblique": "तुम्हारे"
+        },
+        "dative": {
+          "canonical": "तुम्हें",
+          "accepted_variant": "तुमको"
+        },
+        "ergative": "तुमने",
+        "postpositional": {
+          "instrumental_ablative": {"canonical": "तुमसे", "accepted_variants": ["तुम से"]},
+          "locative_in": {"canonical": "तुममें", "accepted_variants": ["तुम में"]},
+          "locative_on": {"canonical": "तुम पर", "accepted_variants": ["तुमपर", "तुम पे", "तुमपे"]},
+          "terminative": {"canonical": "तुम तक", "accepted_variants": ["तुमतक"]}
+        }
+      }
+    },
+    {
+      "tier": "Formal",
+      "paradigm": "aap",
+      "forms": {
+        "subject": "आप",
+        "possessive": {
+          "masculine_singular_direct": "आपका",
+          "feminine_any_number": "आपकी",
+          "masculine_plural_or_oblique": "आपके"
+        },
+        "dative": {
+          "canonical": "आपको",
+          "accepted_variant": null
+        },
+        "ergative": "आपने",
+        "postpositional": {
+          "instrumental_ablative": {"canonical": "आपसे", "accepted_variants": ["आप से"]},
+          "locative_in": {"canonical": "आपमें", "accepted_variants": ["आप में"]},
+          "locative_on": {"canonical": "आप पर", "accepted_variants": ["आपपर", "आप पे", "आपपे"]},
+          "terminative": {"canonical": "आप तक", "accepted_variants": ["आपतक"]}
+        }
+      }
+    },
+    {
+      "tier": "Full Formal",
+      "paradigm": "aap",
+      "forms": {
+        "subject": "आप",
+        "possessive": {
+          "masculine_singular_direct": "आपका",
+          "feminine_any_number": "आपकी",
+          "masculine_plural_or_oblique": "आपके"
+        },
+        "dative": {
+          "canonical": "आपको",
+          "accepted_variant": null
+        },
+        "ergative": "आपने",
+        "postpositional": {
+          "instrumental_ablative": {"canonical": "आपसे", "accepted_variants": ["आप से"]},
+          "locative_in": {"canonical": "आपमें", "accepted_variants": ["आप में"]},
+          "locative_on": {"canonical": "आप पर", "accepted_variants": ["आपपर", "आप पे", "आपपे"]},
+          "terminative": {"canonical": "आप तक", "accepted_variants": ["आपतक"]}
+        }
+      }
+    },
+    {
+      "tier": "Formal-Warm",
+      "paradigm": "aap",
+      "forms": {
+        "subject": "आप",
+        "possessive": {
+          "masculine_singular_direct": "आपका",
+          "feminine_any_number": "आपकी",
+          "masculine_plural_or_oblique": "आपके"
+        },
+        "dative": {
+          "canonical": "आपको",
+          "accepted_variant": null
+        },
+        "ergative": "आपने",
+        "postpositional": {
+          "instrumental_ablative": {"canonical": "आपसे", "accepted_variants": ["आप से"]},
+          "locative_in": {"canonical": "आपमें", "accepted_variants": ["आप में"]},
+          "locative_on": {"canonical": "आप पर", "accepted_variants": ["आपपर", "आप पे", "आपपे"]},
+          "terminative": {"canonical": "आप तक", "accepted_variants": ["आपतक"]}
+        }
+      }
+    },
+    {
+      "tier": "Reverse Formal",
+      "paradigm": "aap",
+      "forms": {
+        "subject": "आप",
+        "possessive": {
+          "masculine_singular_direct": "आपका",
+          "feminine_any_number": "आपकी",
+          "masculine_plural_or_oblique": "आपके"
+        },
+        "dative": {
+          "canonical": "आपको",
+          "accepted_variant": null
+        },
+        "ergative": "आपने",
+        "postpositional": {
+          "instrumental_ablative": {"canonical": "आपसे", "accepted_variants": ["आप से"]},
+          "locative_in": {"canonical": "आपमें", "accepted_variants": ["आप में"]},
+          "locative_on": {"canonical": "आप पर", "accepted_variants": ["आपपर", "आप पे", "आपपे"]},
+          "terminative": {"canonical": "आप तक", "accepted_variants": ["आपतक"]}
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "model_id": "vasista22/whisper-hindi-small",
+  "model_device": "mps:0",
+  "target_sample_rate_hz": 16000,
+  "target_channels": 1,
+  "mps_built": true,
+  "mps_available": true,
+  "model_load_seconds": 1.42,
+  "clips": [
+    {
+      "input_path": "sample_audio/raw/hindi_04.wav",
+      "standardized_path": "sample_audio/processed/hindi_04.wav",
+      "native_sample_rate_hz": 48000,
+      "native_channels": 1,
+      "output_sample_rate_hz": 16000,
+      "output_channels": 1,
+      "duration_seconds": 7.732,
+      "source_dataset": "speechriv/audio_hindi",
+      "source_file": "SPEECHRIV_FEMALE_2/IISc_SYSPINProject_hi_f_EDUC_01083.wav",
+      "reference": "इस प्रकार राजा संसार चन्द ने मुस्लिम आक्रांताओं द्वारा तोड़े गए मंदिर का जीर्णोद्धार करवाया होगा।",
+      "transcription": "इस प्रकार राजा संसार चंद ने मुस्लिम आक्रांताओं द्वारा तोड़े गए मंदिर का जीर्णोद्धार करवाया होगा",
+      "word_error_rate": 0.0625,
+      "audio_to_text_seconds": 17.373,
+      "inference_device": "mps:0"
+    },
+    {
+      "input_path": "sample_audio/raw/hindi_02.wav",
+      "standardized_path": "sample_audio/processed/hindi_02.wav",
+      "native_sample_rate_hz": 48000,
+      "native_channels": 1,
+      "output_sample_rate_hz": 16000,
+      "output_channels": 1,
+      "duration_seconds": 9.764,
+      "source_dataset": "speechriv/audio_hindi",
+      "source_file": "SPEECHRIV_FEMALE_2/IISc_SYSPINProject_hi_f_EDUC_01073.wav",
+      "reference": "अभिनंदन को डॉक्टरों ने चार हफ्तों की मेडिकल लीव दी थी लेकिन आराम करने की बजाय वह श्रीनगर स्थित अपने स्क्वाड्रन में चले गए।",
+      "transcription": "अभिनंदन को डॉक्टरों ने चार हफ्तों की मेडिकल लीव दी थी लेकिन आराम करने की बजाय वह श्रीनगर स्थित अपने स्क्वाड्रन में चले गए",
+      "word_error_rate": 0.0,
+      "audio_to_text_seconds": 16.262,
+      "inference_device": "mps:0"
+    },
+    {
+      "input_path": "sample_audio/raw/hindi_03.wav",
+      "standardized_path": "sample_audio/processed/hindi_03.wav",
+      "native_sample_rate_hz": 48000,
+      "native_channels": 1,
+      "output_sample_rate_hz": 16000,
+      "output_channels": 1,
+      "duration_seconds": 8.7,
+      "source_dataset": "speechriv/audio_hindi",
+      "source_file": "SPEECHRIV_FEMALE_2/IISc_SYSPINProject_hi_f_EDUC_01079.wav",
+      "reference": "वे अब तक जनमानस के विश्वासों पर खरी उतरी हैं और जर्मनी की नियंत्रण पहचान को और पुख्ता किया है।",
+      "transcription": "वे अब तक जनमानस की विश्वासों पर खरी उतरी है और जर्मनी की नियंत्रण पहचान को और पुख्ता किया है",
+      "word_error_rate": 0.1,
+      "audio_to_text_seconds": 10.634,
+      "inference_device": "mps:0"
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "bundle_name": "harshita_handoff_bundle.zip",
+  "bundle_date": "2026-09-30",
+  "entrypoint": "HARSHITA_HANDOFF.md",
+  "validated_metrics": {
+    "scenario_count": 20,
+    "tagged_sentence_count": 48,
+    "cross_tier_transformations_passed": 144,
+    "cross_tier_transformations_total": 144,
+    "smoke_passed": 48,
+    "smoke_total": 48,
+    "detection_correct": 36,
+    "detection_total": 48,
+    "test_count": 53
+  },
+  "files": {
+    "handoff_and_report": [
+      "README.md",
+      "HARSHITA_HANDOFF.md",
+      "HANDOFF_MANIFEST.json",
+      "REPORT_READY_METHOD_EVALUATION.md",
+      "REGISTER_SELECTION_ARCHITECTURE.md",
+      "SCENARIO_REFERENCE.md",
+      "REGISTER_DETECTION_BASELINE.md",
+      "DAY6_FINAL_REPORT.md",
+      "STEP_5_TRANSFORM_REVIEW.md",
+      "PRONOUN_RULES.md",
+      "VERB_ADDRESS_RULES.md"
+    ],
+    "code": [
+      "scenario_dial.py",
+      "hindi_tokenizer.py",
+      "register_transformer.py",
+      "register_detector.py",
+      "register_detection_baseline.py",
+      "cross_tier_review.py"
+    ],
+    "rule_and_test_data": [
+      "scenario_lookup.json",
+      "pronoun_rules.json",
+      "verb_rules.json",
+      "address_term_rules.json",
+      "register_test_sentences.json",
+      "transformation_failure_log.json",
+      "day6_bug_list.json"
+    ],
+    "asr": [
+      "ASR_BASELINE.md",
+      "SETUP_NOTES.md",
+      "asr_baseline.py",
+      "asr_baseline_results.json",
+      "day2_asr_results.json",
+      "sample_audio/manifest.json",
+      "sample_audio/day2_manifest.json"
+    ],
+    "environment": [
+      "requirements.txt"
+    ],
+    "tests": [
+      "tests/test_scenario_dial.py",
+      "tests/test_hindi_tokenizer.py",
+      "tests/test_pronoun_rules.py",
+      "tests/test_day4_rules.py",
+      "tests/test_register_test_sentences.py",
+      "tests/test_register_transformer.py",
+      "tests/test_register_detector.py",
+      "tests/test_special_case_branches.py",
+      "tests/test_handoff_bundle.py"
+    ]
+  },
+  "excluded_large_artifacts": [
+    ".cache/stanza",
+    ".cache/huggingface",
+    "sample_audio/raw",
+    "sample_audio/processed",
+    "sample_audio/day2_standardized"
+  ]
+}

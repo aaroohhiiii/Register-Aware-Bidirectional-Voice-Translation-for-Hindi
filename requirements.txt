@@ -1,0 +1,6 @@
+torch==2.7.1
+transformers==5.17.0
+soundfile==0.14.0
+librosa==1.0.0
+indic-nlp-library==0.92
+stanza==1.14.0

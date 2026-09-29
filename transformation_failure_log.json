@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "scope": "Step 5.2 manual review of 144 cross-tier transformations",
+  "summary": {
+    "total_cases": 144,
+    "passed": 144,
+    "failed": 0,
+    "accuracy_percent": 100.0,
+    "historical_failures": 2,
+    "resolved_in_step_6_1": 2
+  },
+  "component_failure_counts": {
+    "pronoun_table": 0,
+    "verb_table": 0,
+    "honorific_address_logic": 0
+  },
+  "failures": [
+    {
+      "failure_id": "TRANS-001",
+      "status": "resolved_step_6_1",
+      "sentence_id": 30,
+      "source_tier": "Full Formal",
+      "target_tier": "Full Informal",
+      "input": "आपसे मिलकर खुशी हुई",
+      "actual": "आपसे मिलकर खुशी हुई",
+      "expected": "तुझसे मिलकर खुशी हुई",
+      "component": "pronoun_table",
+      "rule_source": "pronoun_rules.json",
+      "cause": "The locked table has subject, possessive, dative, and ergative forms but no instrumental/ablative form for आपसे.",
+      "runtime_behavior": "Graceful fallback preserved the unsupported token unchanged.",
+      "resolution": "Added instrumental_ablative forms to all six tiers; current output is तुझसे मिलकर खुशी हुई."
+    },
+    {
+      "failure_id": "TRANS-002",
+      "status": "resolved_step_6_1",
+      "sentence_id": 30,
+      "source_tier": "Full Formal",
+      "target_tier": "Respectful Casual",
+      "input": "आपसे मिलकर खुशी हुई",
+      "actual": "आपसे मिलकर खुशी हुई",
+      "expected": "तुमसे मिलकर खुशी हुई",
+      "component": "pronoun_table",
+      "rule_source": "pronoun_rules.json",
+      "cause": "The locked table has subject, possessive, dative, and ergative forms but no instrumental/ablative form for आपसे.",
+      "runtime_behavior": "Graceful fallback preserved the unsupported token unchanged.",
+      "resolution": "Added instrumental_ablative forms to all six tiers; current output is तुमसे मिलकर खुशी हुई."
+    }
+  ]
+}

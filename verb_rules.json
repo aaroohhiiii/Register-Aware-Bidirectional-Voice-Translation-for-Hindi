@@ -1,0 +1,151 @@
+{
+  "schema_version": 1,
+  "status": "draft_day_4",
+  "scope": "Hindi second-person verb agreement by register tier and subject gender",
+  "categories": {
+    "present_habitual": "Habitual/simple present agreement, for example करता है.",
+    "present_progressive": "Present progressive agreement, for example कर रहा है.",
+    "past_completive": "Completed-action construction with चुका/चुकी/चुके, for example खा चुकी हैं.",
+    "modal_potential": "Ability or potential construction with सकना, for example कर सकते हैं."
+  },
+  "notes": [
+    "Gender is an independent axis: selecting a register tier must not erase masculine/feminine agreement.",
+    "The placeholder {stem} is the lexical verb stem; lexical stem formation and irregular perfectives are outside this table.",
+    "Full Informal canonically follows the तू paradigm from pronoun_rules.json, with an accepted तुम casual-plural variant recorded separately.",
+    "Formal, Full Formal, Formal-Warm, and Reverse Formal share आप respectful-plural verb morphology. Their distinction is carried by address terms, imperatives, and honorific policy rather than invented verb endings."
+  ],
+  "tiers": [
+    {
+      "tier": "Full Informal",
+      "canonical_subject": "तू",
+      "agreement_class": "intimate_singular",
+      "gender_patterns": {
+        "masculine": {
+          "present_habitual": "{stem}ता है",
+          "present_progressive": "{stem} रहा है",
+          "past_completive": "{stem} चुका है",
+          "modal_potential": "{stem} सकता है"
+        },
+        "feminine": {
+          "present_habitual": "{stem}ती है",
+          "present_progressive": "{stem} रही है",
+          "past_completive": "{stem} चुकी है",
+          "modal_potential": "{stem} सकती है"
+        }
+      },
+      "accepted_casual_plural_variant": {
+        "subject": "तुम",
+        "gender_patterns": {
+          "masculine": {
+            "present_habitual": "{stem}ते हो",
+            "present_progressive": "{stem} रहे हो",
+            "past_completive": "{stem} चुके हो",
+            "modal_potential": "{stem} सकते हो"
+          },
+          "feminine": {
+            "present_habitual": "{stem}ती हो",
+            "present_progressive": "{stem} रही हो",
+            "past_completive": "{stem} चुकी हो",
+            "modal_potential": "{stem} सकती हो"
+          }
+        }
+      }
+    },
+    {
+      "tier": "Respectful Casual",
+      "canonical_subject": "तुम",
+      "agreement_class": "casual_plural",
+      "gender_patterns": {
+        "masculine": {
+          "present_habitual": "{stem}ते हो",
+          "present_progressive": "{stem} रहे हो",
+          "past_completive": "{stem} चुके हो",
+          "modal_potential": "{stem} सकते हो"
+        },
+        "feminine": {
+          "present_habitual": "{stem}ती हो",
+          "present_progressive": "{stem} रही हो",
+          "past_completive": "{stem} चुकी हो",
+          "modal_potential": "{stem} सकती हो"
+        }
+      }
+    },
+    {
+      "tier": "Formal",
+      "canonical_subject": "आप",
+      "agreement_class": "respectful_plural",
+      "gender_patterns": {
+        "masculine": {
+          "present_habitual": "{stem}ते हैं",
+          "present_progressive": "{stem} रहे हैं",
+          "past_completive": "{stem} चुके हैं",
+          "modal_potential": "{stem} सकते हैं"
+        },
+        "feminine": {
+          "present_habitual": "{stem}ती हैं",
+          "present_progressive": "{stem} रही हैं",
+          "past_completive": "{stem} चुकी हैं",
+          "modal_potential": "{stem} सकती हैं"
+        }
+      }
+    },
+    {
+      "tier": "Full Formal",
+      "canonical_subject": "आप",
+      "agreement_class": "respectful_plural",
+      "gender_patterns": {
+        "masculine": {
+          "present_habitual": "{stem}ते हैं",
+          "present_progressive": "{stem} रहे हैं",
+          "past_completive": "{stem} चुके हैं",
+          "modal_potential": "{stem} सकते हैं"
+        },
+        "feminine": {
+          "present_habitual": "{stem}ती हैं",
+          "present_progressive": "{stem} रही हैं",
+          "past_completive": "{stem} चुकी हैं",
+          "modal_potential": "{stem} सकती हैं"
+        }
+      }
+    },
+    {
+      "tier": "Formal-Warm",
+      "canonical_subject": "आप",
+      "agreement_class": "respectful_plural",
+      "gender_patterns": {
+        "masculine": {
+          "present_habitual": "{stem}ते हैं",
+          "present_progressive": "{stem} रहे हैं",
+          "past_completive": "{stem} चुके हैं",
+          "modal_potential": "{stem} सकते हैं"
+        },
+        "feminine": {
+          "present_habitual": "{stem}ती हैं",
+          "present_progressive": "{stem} रही हैं",
+          "past_completive": "{stem} चुकी हैं",
+          "modal_potential": "{stem} सकती हैं"
+        }
+      }
+    },
+    {
+      "tier": "Reverse Formal",
+      "canonical_subject": "आप",
+      "agreement_class": "respectful_plural",
+      "gender_patterns": {
+        "masculine": {
+          "present_habitual": "{stem}ते हैं",
+          "present_progressive": "{stem} रहे हैं",
+          "past_completive": "{stem} चुके हैं",
+          "modal_potential": "{stem} सकते हैं"
+        },
+        "feminine": {
+          "present_habitual": "{stem}ती हैं",
+          "present_progressive": "{stem} रही हैं",
+          "past_completive": "{stem} चुकी हैं",
+          "modal_potential": "{stem} सकती हैं"
+        }
+      }
+    }
+  ]
+}
+

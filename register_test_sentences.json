@@ -1,0 +1,445 @@
+{
+  "schema_version": 1,
+  "status": "locked_day_4_test_set",
+  "language": "hi",
+  "description": "Forty-eight Hindi register test sentences: eight ground-truth examples for each of the six tiers.",
+  "gender_schema": {
+    "value": ["masculine", "feminine", null],
+    "applies_to": ["addressee", "speaker", "object", null]
+  },
+  "sentences": [
+    {
+      "id": 1,
+      "tier": "Full Informal",
+      "sentence": "तू क्या कर रहा है?",
+      "gender": {"value": "masculine", "applies_to": "addressee"},
+      "tense_mood": {"key": "present_continuous", "label": "Present continuous"},
+      "feature_tested": "Subject pronoun, gendered verb",
+      "feature_tags": ["subject_pronoun", "gender_agreement"]
+    },
+    {
+      "id": 2,
+      "tier": "Full Informal",
+      "sentence": "तू क्या कर रही है?",
+      "gender": {"value": "feminine", "applies_to": "addressee"},
+      "tense_mood": {"key": "present_continuous", "label": "Present continuous"},
+      "feature_tested": "Gender agreement contrast with #1",
+      "feature_tags": ["gender_agreement", "contrast_pair_1_2"]
+    },
+    {
+      "id": 3,
+      "tier": "Full Informal",
+      "sentence": "तूने खाना खा लिया?",
+      "gender": {"value": "masculine", "applies_to": "object"},
+      "tense_mood": {"key": "past", "label": "Past"},
+      "feature_tested": "Ergative (तूने)",
+      "feature_tags": ["ergative_pronoun", "object_agreement"]
+    },
+    {
+      "id": 4,
+      "tier": "Full Informal",
+      "sentence": "तूने रोटी खा ली?",
+      "gender": {"value": "feminine", "applies_to": "object"},
+      "tense_mood": {"key": "past", "label": "Past"},
+      "feature_tested": "Ergative + gendered past participle",
+      "feature_tags": ["ergative_pronoun", "past_participle_gender", "object_agreement"]
+    },
+    {
+      "id": 5,
+      "tier": "Full Informal",
+      "sentence": "तुम कल आओगे?",
+      "gender": {"value": "masculine", "applies_to": "addressee"},
+      "tense_mood": {"key": "future", "label": "Future"},
+      "feature_tested": "तुम-paradigm future",
+      "feature_tags": ["tum_paradigm", "future", "gender_agreement"]
+    },
+    {
+      "id": 6,
+      "tier": "Full Informal",
+      "sentence": "तुम कल आओगी?",
+      "gender": {"value": "feminine", "applies_to": "addressee"},
+      "tense_mood": {"key": "future", "label": "Future"},
+      "feature_tested": "Gendered future contrast",
+      "feature_tags": ["tum_paradigm", "future", "gender_agreement", "contrast_pair_5_6"]
+    },
+    {
+      "id": 7,
+      "tier": "Full Informal",
+      "sentence": "तेरा बैग कहाँ है?",
+      "gender": {"value": "masculine", "applies_to": "object"},
+      "tense_mood": {"key": "present", "label": "Present"},
+      "feature_tested": "Possessive, masculine noun",
+      "feature_tags": ["possessive_pronoun", "possessed_noun_gender"]
+    },
+    {
+      "id": 8,
+      "tier": "Full Informal",
+      "sentence": "तुम्हें पता है क्या हुआ?",
+      "gender": {"value": null, "applies_to": null},
+      "tense_mood": {"key": "present", "label": "Present"},
+      "feature_tested": "Dative case",
+      "feature_tags": ["dative_pronoun"]
+    },
+    {
+      "id": 9,
+      "tier": "Respectful Casual",
+      "sentence": "तुम यहाँ से स्टेशन कैसे जाओगे?",
+      "gender": {"value": "masculine", "applies_to": "addressee"},
+      "tense_mood": {"key": "future", "label": "Future"},
+      "feature_tested": "Directional question",
+      "feature_tags": ["directional_question", "future", "gender_agreement"]
+    },
+    {
+      "id": 10,
+      "tier": "Respectful Casual",
+      "sentence": "भैया, तुम्हारे पास खुले पैसे हैं क्या?",
+      "gender": {"value": null, "applies_to": null},
+      "tense_mood": {"key": "present", "label": "Present"},
+      "feature_tested": "Address term + possessive",
+      "feature_tags": ["address_term", "possessive_pronoun"]
+    },
+    {
+      "id": 11,
+      "tier": "Respectful Casual",
+      "sentence": "तुम कितने बजे आते हो?",
+      "gender": {"value": "masculine", "applies_to": "addressee"},
+      "tense_mood": {"key": "habitual", "label": "Habitual"},
+      "feature_tested": "Casual-plural verb class",
+      "feature_tags": ["casual_plural_agreement", "habitual"]
+    },
+    {
+      "id": 12,
+      "tier": "Respectful Casual",
+      "sentence": "तुम्हारा नाम क्या है?",
+      "gender": {"value": null, "applies_to": null},
+      "tense_mood": {"key": "present", "label": "Present"},
+      "feature_tested": "Possessive, direct masculine",
+      "feature_tags": ["possessive_pronoun", "direct_masculine"]
+    },
+    {
+      "id": 13,
+      "tier": "Respectful Casual",
+      "sentence": "तुमने सामान रख दिया?",
+      "gender": {"value": "masculine", "applies_to": "object"},
+      "tense_mood": {"key": "past", "label": "Past"},
+      "feature_tested": "Ergative (तुमने)",
+      "feature_tags": ["ergative_pronoun", "past", "object_agreement"]
+    },
+    {
+      "id": 14,
+      "tier": "Respectful Casual",
+      "sentence": "तुम ये कर सकते हो क्या?",
+      "gender": {"value": "masculine", "applies_to": "addressee"},
+      "tense_mood": {"key": "modal", "label": "Modal"},
+      "feature_tested": "Ability/capability modal",
+      "feature_tags": ["modal_potential", "casual_plural_agreement"]
+    },
+    {
+      "id": 15,
+      "tier": "Respectful Casual",
+      "sentence": "तुम्हें कल तक करना होगा",
+      "gender": {"value": null, "applies_to": null},
+      "tense_mood": {"key": "obligation", "label": "Obligation"},
+      "feature_tested": "Dative + obligation construction",
+      "feature_tags": ["dative_pronoun", "obligation"]
+    },
+    {
+      "id": 16,
+      "tier": "Respectful Casual",
+      "sentence": "तुम जल्दी आ जाना",
+      "gender": {"value": null, "applies_to": null},
+      "tense_mood": {"key": "imperative_soft", "label": "Imperative (soft)"},
+      "feature_tested": "Casual command form",
+      "feature_tags": ["soft_imperative", "casual_command"]
+    },
+    {
+      "id": 17,
+      "tier": "Formal",
+      "sentence": "आप कल आ सकते हैं क्या?",
+      "gender": {"value": "masculine", "applies_to": "addressee"},
+      "tense_mood": {"key": "modal", "label": "Modal"},
+      "feature_tested": "आप + respectful-plural modal",
+      "feature_tags": ["subject_pronoun", "modal_potential", "respectful_plural"]
+    },
+    {
+      "id": 18,
+      "tier": "Formal",
+      "sentence": "आपका खाता नंबर क्या है?",
+      "gender": {"value": null, "applies_to": null},
+      "tense_mood": {"key": "present", "label": "Present"},
+      "feature_tested": "Possessive, masculine noun",
+      "feature_tags": ["possessive_pronoun", "possessed_noun_gender"]
+    },
+    {
+      "id": 19,
+      "tier": "Formal",
+      "sentence": "आपकी रसीद तैयार है",
+      "gender": {"value": null, "applies_to": null},
+      "tense_mood": {"key": "present", "label": "Present"},
+      "feature_tested": "Possessive, feminine noun",
+      "feature_tags": ["possessive_pronoun", "possessed_noun_gender"]
+    },
+    {
+      "id": 20,
+      "tier": "Formal",
+      "sentence": "आपने फॉर्म भर दिया?",
+      "gender": {"value": null, "applies_to": null},
+      "tense_mood": {"key": "past", "label": "Past"},
+      "feature_tested": "Ergative (आपने)",
+      "feature_tags": ["ergative_pronoun", "past"]
+    },
+    {
+      "id": 21,
+      "tier": "Formal",
+      "sentence": "आपको कल तक जमा करना होगा",
+      "gender": {"value": null, "applies_to": null},
+      "tense_mood": {"key": "obligation", "label": "Obligation"},
+      "feature_tested": "Dative + obligation",
+      "feature_tags": ["dative_pronoun", "obligation"]
+    },
+    {
+      "id": 22,
+      "tier": "Formal",
+      "sentence": "आप कहाँ रहते हैं?",
+      "gender": {"value": "masculine", "applies_to": "addressee"},
+      "tense_mood": {"key": "habitual", "label": "Habitual"},
+      "feature_tested": "Respectful-plural habitual",
+      "feature_tags": ["respectful_plural", "habitual", "gender_agreement"]
+    },
+    {
+      "id": 23,
+      "tier": "Formal",
+      "sentence": "आप कहाँ रहती हैं?",
+      "gender": {"value": "feminine", "applies_to": "addressee"},
+      "tense_mood": {"key": "habitual", "label": "Habitual"},
+      "feature_tested": "Gender agreement contrast with #22",
+      "feature_tags": ["respectful_plural", "habitual", "gender_agreement", "contrast_pair_22_23"]
+    },
+    {
+      "id": 24,
+      "tier": "Formal",
+      "sentence": "क्या आप मुझे यह समझा सकते हैं?",
+      "gender": {"value": "masculine", "applies_to": "addressee"},
+      "tense_mood": {"key": "modal", "label": "Modal"},
+      "feature_tested": "Formal request modal",
+      "feature_tags": ["formal_request", "modal_potential", "respectful_plural"]
+    },
+    {
+      "id": 25,
+      "tier": "Full Formal",
+      "sentence": "सर, क्या मैं अंदर आ सकता हूं?",
+      "gender": {"value": "masculine", "applies_to": "speaker"},
+      "tense_mood": {"key": "modal", "label": "Modal"},
+      "feature_tested": "Address term + self-reference modal",
+      "feature_tags": ["address_term", "self_reference", "modal_potential", "speaker_gender"]
+    },
+    {
+      "id": 26,
+      "tier": "Full Formal",
+      "sentence": "आपने जो पढ़ाया, मैं समझ गया",
+      "gender": {"value": "masculine", "applies_to": "speaker"},
+      "tense_mood": {"key": "past", "label": "Past"},
+      "feature_tested": "Ergative + relative clause",
+      "feature_tags": ["ergative_pronoun", "relative_clause", "speaker_gender"]
+    },
+    {
+      "id": 27,
+      "tier": "Full Formal",
+      "sentence": "डॉक्टर साहब, मुझे बुखार है",
+      "gender": {"value": null, "applies_to": null},
+      "tense_mood": {"key": "present", "label": "Present"},
+      "feature_tested": "Address term (साहब)",
+      "feature_tags": ["address_term", "honorific_term"]
+    },
+    {
+      "id": 28,
+      "tier": "Full Formal",
+      "sentence": "आप कृपया दोबारा समझाइए",
+      "gender": {"value": null, "applies_to": null},
+      "tense_mood": {"key": "imperative_formal", "label": "Imperative (formal)"},
+      "feature_tested": "Honorific + formal imperative",
+      "feature_tags": ["honorific_particle", "formal_imperative"]
+    },
+    {
+      "id": 29,
+      "tier": "Full Formal",
+      "sentence": "मैडम, क्या आप मेरा प्रश्न सुन सकती हैं?",
+      "gender": {"value": "feminine", "applies_to": "addressee"},
+      "tense_mood": {"key": "modal", "label": "Modal"},
+      "feature_tested": "Address term + gendered modal",
+      "feature_tags": ["address_term", "modal_potential", "gender_agreement"]
+    },
+    {
+      "id": 30,
+      "tier": "Full Formal",
+      "sentence": "आपसे मिलकर खुशी हुई",
+      "gender": {"value": null, "applies_to": null},
+      "tense_mood": {"key": "present_idiomatic", "label": "Present/idiomatic"},
+      "feature_tested": "Formal greeting construction",
+      "feature_tags": ["formal_greeting", "idiomatic_construction"]
+    },
+    {
+      "id": 31,
+      "tier": "Full Formal",
+      "sentence": "क्या आपने मेरी अर्जी पढ़ी?",
+      "gender": {"value": null, "applies_to": null},
+      "tense_mood": {"key": "past", "label": "Past"},
+      "feature_tested": "Ergative, institutional noun",
+      "feature_tags": ["ergative_pronoun", "institutional_noun"]
+    },
+    {
+      "id": 32,
+      "tier": "Full Formal",
+      "sentence": "आप कृपया अपना परिचय दीजिए",
+      "gender": {"value": null, "applies_to": null},
+      "tense_mood": {"key": "imperative_formal", "label": "Imperative (formal)"},
+      "feature_tested": "कृपया + formal imperative",
+      "feature_tags": ["honorific_particle", "formal_imperative"]
+    },
+    {
+      "id": 33,
+      "tier": "Formal-Warm",
+      "sentence": "दादी जी, आप कैसी हैं?",
+      "gender": {"value": "feminine", "applies_to": "addressee"},
+      "tense_mood": {"key": "present", "label": "Present"},
+      "feature_tested": "Kinship address term + gendered आप form",
+      "feature_tags": ["kinship_address", "honorific_particle", "gender_agreement"]
+    },
+    {
+      "id": 34,
+      "tier": "Formal-Warm",
+      "sentence": "आपने खाना खाया या नहीं?",
+      "gender": {"value": null, "applies_to": null},
+      "tense_mood": {"key": "past", "label": "Past"},
+      "feature_tested": "Ergative, casual-warm topic",
+      "feature_tags": ["ergative_pronoun", "warm_topic"]
+    },
+    {
+      "id": 35,
+      "tier": "Formal-Warm",
+      "sentence": "आप आराम कीजिए",
+      "gender": {"value": null, "applies_to": null},
+      "tense_mood": {"key": "imperative_warm", "label": "Imperative (warm)"},
+      "feature_tested": "Warm imperative, no institutional honorific",
+      "feature_tags": ["warm_imperative", "no_institutional_honorific"]
+    },
+    {
+      "id": 36,
+      "tier": "Formal-Warm",
+      "sentence": "नानी जी, आपका आशीर्वाद चाहिए",
+      "gender": {"value": null, "applies_to": null},
+      "tense_mood": {"key": "present", "label": "Present"},
+      "feature_tested": "Kinship term + possessive",
+      "feature_tags": ["kinship_address", "honorific_particle", "possessive_pronoun"]
+    },
+    {
+      "id": 37,
+      "tier": "Formal-Warm",
+      "sentence": "आप चिंता मत कीजिए",
+      "gender": {"value": null, "applies_to": null},
+      "tense_mood": {"key": "negative_imperative", "label": "Negative imperative"},
+      "feature_tested": "Warm reassurance construction",
+      "feature_tags": ["negative_imperative", "warm_reassurance"]
+    },
+    {
+      "id": 38,
+      "tier": "Formal-Warm",
+      "sentence": "आप कब आ रहे हैं?",
+      "gender": {"value": "masculine", "applies_to": "addressee"},
+      "tense_mood": {"key": "present_continuous", "label": "Present continuous"},
+      "feature_tested": "Gendered continuous, आप form",
+      "feature_tags": ["present_continuous", "gender_agreement", "respectful_plural"]
+    },
+    {
+      "id": 39,
+      "tier": "Formal-Warm",
+      "sentence": "आप कब आ रही हैं?",
+      "gender": {"value": "feminine", "applies_to": "addressee"},
+      "tense_mood": {"key": "present_continuous", "label": "Present continuous"},
+      "feature_tested": "Gender agreement contrast with #38",
+      "feature_tags": ["present_continuous", "gender_agreement", "respectful_plural", "contrast_pair_38_39"]
+    },
+    {
+      "id": 40,
+      "tier": "Formal-Warm",
+      "sentence": "आपकी तबीयत अब कैसी है?",
+      "gender": {"value": null, "applies_to": null},
+      "tense_mood": {"key": "present", "label": "Present"},
+      "feature_tested": "Possessive + health check-in idiom",
+      "feature_tags": ["possessive_pronoun", "health_check_in", "idiomatic_construction"]
+    },
+    {
+      "id": 41,
+      "tier": "Reverse Formal",
+      "sentence": "जी मैडम, आपके लिए और कुछ लाऊं?",
+      "gender": {"value": null, "applies_to": null},
+      "tense_mood": {"key": "modal_offer", "label": "Modal/offer"},
+      "feature_tested": "Compound honorific (जी + address term)",
+      "feature_tags": ["compound_honorific", "address_term", "service_offer"]
+    },
+    {
+      "id": 42,
+      "tier": "Reverse Formal",
+      "sentence": "सर, आपका ऑर्डर तैयार है",
+      "gender": {"value": null, "applies_to": null},
+      "tense_mood": {"key": "present", "label": "Present"},
+      "feature_tested": "Address term + possessive",
+      "feature_tags": ["address_term", "possessive_pronoun"]
+    },
+    {
+      "id": 43,
+      "tier": "Reverse Formal",
+      "sentence": "कृपया यहां बैठिए",
+      "gender": {"value": null, "applies_to": null},
+      "tense_mood": {"key": "imperative_formal", "label": "Imperative (formal)"},
+      "feature_tested": "कृपया + formal imperative",
+      "feature_tags": ["honorific_particle", "formal_imperative"]
+    },
+    {
+      "id": 44,
+      "tier": "Reverse Formal",
+      "sentence": "आपको कोई परेशानी तो नहीं हुई?",
+      "gender": {"value": null, "applies_to": null},
+      "tense_mood": {"key": "past", "label": "Past"},
+      "feature_tested": "Dative + polite past inquiry",
+      "feature_tags": ["dative_pronoun", "polite_inquiry", "past"]
+    },
+    {
+      "id": 45,
+      "tier": "Reverse Formal",
+      "sentence": "जी, मैं अभी लाता हूं",
+      "gender": {"value": "masculine", "applies_to": "speaker"},
+      "tense_mood": {"key": "present", "label": "Present"},
+      "feature_tested": "Compound honorific, self-reference",
+      "feature_tags": ["honorific_particle", "self_reference", "speaker_gender"]
+    },
+    {
+      "id": 46,
+      "tier": "Reverse Formal",
+      "sentence": "आपका बिल यह रहा जी",
+      "gender": {"value": null, "applies_to": null},
+      "tense_mood": {"key": "present", "label": "Present"},
+      "feature_tested": "Possessive + trailing honorific",
+      "feature_tags": ["possessive_pronoun", "trailing_honorific"]
+    },
+    {
+      "id": 47,
+      "tier": "Reverse Formal",
+      "sentence": "क्या मैं आपकी कोई सहायता कर सकता हूं?",
+      "gender": {"value": "masculine", "applies_to": "speaker"},
+      "tense_mood": {"key": "modal", "label": "Modal"},
+      "feature_tested": "Service-offer modal",
+      "feature_tags": ["service_offer", "modal_potential", "self_reference", "speaker_gender"]
+    },
+    {
+      "id": 48,
+      "tier": "Reverse Formal",
+      "sentence": "आप कृपया थोड़ा इंतज़ार करें",
+      "gender": {"value": null, "applies_to": null},
+      "tense_mood": {"key": "imperative_formal", "label": "Imperative (formal)"},
+      "feature_tested": "कृपया + formal imperative",
+      "feature_tags": ["honorific_particle", "formal_imperative"]
+    }
+  ]
+}
+

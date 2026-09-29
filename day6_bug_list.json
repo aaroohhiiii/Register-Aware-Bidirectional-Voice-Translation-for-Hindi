@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "status": "final_day_6",
+  "current_results": {
+    "transformation_cases_passed": 144,
+    "transformation_cases_total": 144,
+    "smoke_cases_passed": 48,
+    "smoke_cases_total": 48,
+    "detection_correct": 36,
+    "detection_total": 48,
+    "detection_accuracy_percent": 75.0
+  },
+  "items": [
+    {
+      "id": "TRANS-001-002",
+      "type": "bug",
+      "status": "resolved_step_6_1",
+      "component": "pronoun_table",
+      "summary": "Instrumental आपसे could not convert to तुझसे or तुमसे.",
+      "resolution": "Added instrumental/ablative forms across all six tiers and phrase-aware replacement.",
+      "verification": "144/144 transformation cases and 48/48 smoke cases pass."
+    },
+    {
+      "id": "PRONOUN-AUDIT-001",
+      "type": "preventive_gap",
+      "status": "resolved_step_6_2",
+      "component": "pronoun_table",
+      "summary": "Other postpositional cases and spelling variants were not explicit.",
+      "resolution": "Added में, पर/पे, and तक forms; documented साथ, लिए, पास, and बारे में as covered oblique constructions.",
+      "verification": "Joined and split variants have regression tests."
+    },
+    {
+      "id": "DETECT-001",
+      "type": "confirmed_limitation",
+      "status": "accepted_report_limitation",
+      "component": "register_detection",
+      "summary": "Three Full Informal sentences are detected as Respectful Casual.",
+      "linguistic_reason": "They use accepted तुम morphology, identical to the Respectful Casual paradigm without scenario context."
+    },
+    {
+      "id": "DETECT-002",
+      "type": "confirmed_limitation",
+      "status": "accepted_report_limitation",
+      "component": "register_detection",
+      "summary": "Three Full Formal sentences are detected as Formal.",
+      "linguistic_reason": "आप morphology and respectful-plural agreement are shared, and these sentences lack an overt strict-formality marker."
+    },
+    {
+      "id": "DETECT-003",
+      "type": "confirmed_limitation",
+      "status": "accepted_report_limitation",
+      "component": "register_detection",
+      "summary": "Six Formal-Warm sentences are detected as Formal or Full Formal.",
+      "linguistic_reason": "Warmth comes from the elder-relative relationship; without an overt kinship address term it is not recoverable from आप morphology."
+    },
+    {
+      "id": "SPECIAL-001",
+      "type": "implementation_gap",
+      "status": "resolved_step_6_5",
+      "component": "address_term_logic",
+      "summary": "Special tiers did not consume validated scenario-level address overrides.",
+      "resolution": "Formal-Warm now validates elder_relative terms and Reverse Formal validates customer_facing terms without guessing kinship."
+    },
+    {
+      "id": "SPECIAL-002",
+      "type": "risk",
+      "status": "verified_step_6_5",
+      "component": "verb_logic",
+      "summary": "Addressee agreement could have flattened service-worker self-reference.",
+      "resolution": "First-person हूं/हूँ clauses are explicitly excluded from addressee rewrites and tested for masculine, feminine, and mixed clauses."
+    }
+  ]
+}
