@@ -1,5 +1,15 @@
 .venv/
+tts-env/
 .cache/
+.env
 __pycache__/
 *.py[cod]
-
+tts_out/
+clips/
+asr_out/
+flagged_for_aarohi.csv
+e2e_out/
+clips_dirB/
+dirB_out/
+ui_out/
+gradio_cached_examples/

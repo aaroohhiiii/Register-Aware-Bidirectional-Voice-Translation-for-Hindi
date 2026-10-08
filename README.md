@@ -337,3 +337,98 @@ standalone register detections.
 
 Generated/cache directories such as `.venv`, `.cache`, and `__pycache__` are
 not source files and are excluded from version control and the handoff archive.
+
+---
+
+## Task 1 — TTS Setup
+
+### Overview
+
+`tts.py` exposes a single public function:
+
+```python
+from tts import speak
+
+out_path = speak(
+    text="आप कहाँ जा रहे हैं?",
+    out_path="output.wav",   # parent dirs created automatically
+    backend="timbre",        # "timbre" | "parler" | "mms" (default: config.TTS_BACKEND)
+    speed=1.0,               # 0.5–2.0 (ignored by MMS)
+    voice="Nalini",          # Timbre only (ignored by Parler/MMS)
+)
+```
+
+`tts.last_backend_used` holds the name of the backend that actually wrote the file
+(useful when a fallback was triggered).
+
+Three backends are supported in priority order:
+
+| # | Backend | Type | Model |
+|---|---------|------|-------|
+| 1 | **timbre** | Cloud | Gnani AI `timbre-v2.5` via `api.vachana.ai` |
+| 2 | **parler** | Local CPU | `ai4bharat/indic-parler-tts` |
+| 3 | **mms** | Local CPU | `facebook/mms-tts-hin` (VITS) |
+
+If backend 1 fails (network error, timeout, bad status code) the module
+automatically tries backend 2, then backend 3.
+
+### 1 · Set the API key
+
+```bash
+# Copy the example file and fill in your Gnani key.
+copy .env.example .env
+# Edit .env and replace "your_key_here" with the real value.
+notepad .env
+```
+
+`.env` is in `.gitignore` and will never be committed.
+
+### 2 · Install dependencies
+
+The project venv (`tts-env`) already has all required packages.
+To recreate from scratch:
+
+```powershell
+python -m venv tts-env
+tts-env\Scripts\pip install -r requirements.txt
+# Parler TTS (not yet on PyPI — install from GitHub):
+tts-env\Scripts\pip install git+https://github.com/huggingface/parler-tts.git
+```
+
+### 3 · Run the backend comparison
+
+```powershell
+tts-env\Scripts\python.exe tests/tts_compare.py
+```
+
+This will:
+- Run all 10 test sentences through every backend at speed 1.0
+- Run the Timbre backend additionally at speeds 0.85 and 1.15
+- Save WAV files to `tts_out/<backend>/`
+- Write `tts_out/results.csv` with latency and duration measurements
+- Write `tts_out/index.html` — open in any browser to listen side-by-side
+
+```powershell
+# Open the comparison page in your default browser:
+start tts_out\index.html
+```
+
+### 4 · Change the active backend
+
+Edit `config.py`:
+
+```python
+TTS_BACKEND = "mms"          # use MMS as primary
+TTS_FALLBACK_ORDER = ["mms", "parler", "timbre"]
+```
+
+Or pass `backend=` directly to `speak()` without touching config.
+
+### 5 · Voice and speed settings
+
+| Setting | Where | Effect |
+|---------|-------|--------|
+| `TIMBRE_VOICE` | `config.py` | Fixed to `"Nalini"` (Gnani Hindi female) |
+| `TIMBRE_SPEED` | `config.py` | Default speed sent to the API |
+| `PARLER_DESCRIPTION` | `config.py` | Natural-language voice description; pace wording is substituted at runtime based on the `speed` argument |
+| MMS speed/voice | N/A | MMS has no speed or voice control |

@@ -1,0 +1,21 @@
+clip_id,direction,scenario,condition,expected_register,prompt_text
+d01,B,rickshaw,noisy,informal,कहाँ जाना है, बोल?
+d02,B,rickshaw,noisy,formal,आप कहाँ जाएँगे?
+d03,B,rickshaw,noisy,informal,दो सौ लगेंगे, चलना है तो बैठ।
+d04,B,rickshaw,noisy,formal,माफ़ कीजिए, यहाँ गाड़ी रोकना मना है।
+d05,B,rickshaw,noisy,informal,आगे से मुड़ जा, सीधा चला जा।
+d06,B,rickshaw,noisy,formal,आगे signal पर left ले लीजिए।
+d07,B,rickshaw,clean,informal,कहाँ जाना है, बोल?
+d08,B,rickshaw,clean,formal,आप कहाँ जाएँगे?
+r1a,A,rickshaw,clean,informal,तू मुझे स्टेशन छोड़ देगा क्या?
+r1b,B,rickshaw,noisy,informal,हाँ, सौ रुपये लगेंगे, बैठ जा।
+r2a,A,rickshaw,clean,informal,थोड़ा कम कर दो, अस्सी में चलो।
+r2b,B,rickshaw,noisy,formal,ठीक है साहब, बैठिए।
+s1a,A,shopkeeper,clean,informal,तुम्हारे पास ये कमीज़ दूसरे रंग में है?
+s1b,B,shopkeeper,noisy,formal,जी हाँ, आप यहाँ देख लीजिए।
+s2a,A,shopkeeper,clean,informal,इसका दाम क्या है?
+s2b,B,shopkeeper,noisy,formal,आपके लिए तीन सौ रुपये होगा।
+p1a,A,receptionist,clean,informal,तुम डॉक्टर से मिलवा दो, मेरा नंबर आ गया है।
+p1b,B,receptionist,noisy,formal,आप थोड़ा इंतज़ार कीजिए, डॉक्टर अभी व्यस्त हैं।
+p2a,A,receptionist,clean,informal,मुझे कितना समय लगेगा?
+p2b,B,receptionist,noisy,formal,आपका नंबर अगला है, कृपया अंदर जाइए।

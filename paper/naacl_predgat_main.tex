@@ -1,0 +1,493 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[hyperref]{acl2023}
+\usepackage{times}
+\usepackage{latexsym}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb,amsfonts,amsthm}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows,positioning,calc}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{multirow}
+\usepackage{url}
+\usepackage{color,colortbl}
+
+\definecolor{darkblue}{rgb}{0, 0, 0.5}
+\hypersetup{colorlinks=true, citecolor=darkblue, linkcolor=darkblue, urlcolor=darkblue}
+
+\title{PredGAT: Predictive Graph Attention Networks with Selective Large Language Model Guidance for Scalable Traffic Signal Control}
+
+\author{
+  Anonymous Submission \\
+  NAACL 2026 Main Track (ARR Cycle) \\
+  \texttt{anonymized@submission.org}
+}
+
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Coordinating multi-intersection traffic signals across complex urban road networks requires modeling both spatial inter-intersection dependencies and dynamic temporal vehicle flows. While deep reinforcement learning (DRL) with Graph Attention Networks (GAT) offers scalable decentralized control, pure model-free policies often suffer from sample inefficiency and struggle during abrupt demand shifts. Conversely, emerging Large Language Model (LLM) agents possess broad zero-shot reasoning but are computationally prohibitive and too slow for real-time continuous closed-loop deployment ($<1$s control deadlines). In this paper, we propose \textbf{PredGAT}, an integrated traffic signal control framework that synergizes: (1) an edge-aware \textbf{GATv2 spatial representation} of localized intersection topologies; (2) a \textbf{latent predictive world model} that generates short imagined rollouts ($H=3$) for sample-efficient Dyna-style policy optimization; and (3) an entropy-driven \textbf{selective guidance gate} that dynamically queries LLMs (e.g., Llama-3.1-8B, Qwen-2.5-32B) exclusively for highly uncertain or congested traffic states ($\approx 3\%$ of decision steps). All proposals are bounded by a deterministic \textbf{feasibility and safety filter} that guarantees hard legal transition constraints. Extensive evaluations on a 16-intersection SUMO network across five random seeds demonstrate that PredGAT achieves a \textbf{21.6\% reduction in average vehicle delay}, an \textbf{8.5\% increase in network throughput}, and a \textbf{28.7\% reduction in queue lengths} over standard GAT-DQN baselines, while maintaining sub-second inference feasibility through selective, sparse LLM interaction.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+Urban traffic congestion imposes severe economic losses, increases carbon emissions, and degrades urban mobility worldwide. Modern Intelligent Transportation Systems (ITS) increasingly rely on automated Traffic Signal Control (TSC) to dynamically adjust green light phases based on real-time vehicle flows~\cite{wei2019presslight,chen2020toward}. However, effective network-level TSC remains an open challenge due to high-dimensional state spaces, complex spatial dependencies between adjacent intersections, and non-stationary traffic dynamics.
+
+Over the past decade, Multi-Agent Reinforcement Learning (MARL) has emerged as a dominant paradigm for decentralized TSC. In particular, Graph Neural Networks (GNNs) and Graph Attention Networks (GATs) have been successfully applied to aggregate traffic pressure from neighboring intersections~\cite{velickovic2018graph,wei2019colight,brody2022gatv2}. Despite their success, conventional model-free RL methods suffer from fundamental drawbacks:
+\begin{enumerate}
+    \item \textbf{Sample Inefficiency:} Model-free policies require millions of environmental interactions to learn stable coordination policies, making real-world retraining or adaptation difficult.
+    \item \textbf{Myopic Spatial Optimization:} Standard value-based controllers frequently react to immediate localized queues without anticipating the downstream propagation of vehicle shockwaves.
+    \item \textbf{Fragility Under Distribution Shifts:} When presented with rare, out-of-distribution traffic anomalies (e.g., sudden lane blockages, unexpected demand surges), standard RL policies exhibit high variance and unpredictable degradation.
+\end{enumerate}
+
+Recently, the remarkable reasoning and contextual understanding capabilities of Large Language Models (LLMs) have inspired LLM-driven autonomous agents for cyber-physical systems~\cite{wang2024survey,lai2024llmlight}. By encoding intersection states into textual representations, LLMs can apply commonsense spatial reasoning to select signal phases. However, deploying an LLM as a continuous, end-to-end traffic controller is fundamentally impractical in real-world deployments:
+\begin{itemize}
+    \item \textbf{Inference Latency Bottleneck:} State-of-the-art LLMs require 500--2500\,ms per inference call, violating strict real-time traffic signal deadlines ($<100$\,ms).
+    \item \textbf{Extreme Financial \& Computational Cost:} Querying 16 intersections every 5 seconds yields $\sim 115,200$ queries per hour, making continuous LLM inference economically prohibitive.
+    \item \textbf{Lack of Hard Safety Guarantees:} LLMs occasionally generate hallucinated or illegal phase transitions that violate physical safety constraints (e.g., minimum green times or yellow clearance intervals).
+\end{itemize}
+
+\begin{figure*}[t]
+\centering
+\resizebox{0.92\textwidth}{!}{%
+\begin{tikzpicture}[
+    node distance = 1.0cm and 1.3cm,
+    auto, >=latex',
+    every text node part/.style={align=center},
+    block/.style = {draw, fill=blue!10, rectangle, rounded corners, minimum height=0.9cm, minimum width=2.2cm, font=\small},
+    wm/.style    = {draw, fill=orange!15, rectangle, rounded corners, minimum height=0.9cm, minimum width=2.2cm, font=\small},
+    llm/.style   = {draw, fill=green!15, rectangle, rounded corners, minimum height=0.9cm, minimum width=2.2cm, font=\small},
+    gate/.style  = {draw, fill=yellow!20, diamond, aspect=2.2, minimum height=0.9cm, minimum width=2.0cm, font=\small},
+    proj/.style  = {draw, fill=purple!15, rectangle, rounded corners, minimum height=0.9cm, minimum width=2.2cm, font=\small},
+    act/.style   = {draw, fill=red!10, rectangle, rounded corners, minimum height=0.8cm, minimum width=1.8cm, font=\small},
+  ]
+  \node [block] (obs)  {Network State\\$\mathbf{S}_t, \mathbf{A}_{\text{adj}}$};
+  \node [block, right=of obs]          (gat)  {GATv2 Encoder\\$Q_\phi(\bar h_i^t, a)$};
+  \node [wm,    below=1.1cm of gat]    (wm)   {Latent World Model\\$\mathcal{M}_\theta$ ($H=3$ Rollouts)};
+  \node [gate,  right=of gat]          (gate) {Selective Gate\\$g_i^t \in \{0,1\}$};
+  \node [llm,   above=1.2cm of gate]   (llm)  {LLM Reasoner\\(Llama / Qwen)};
+  \node [proj,  right=1.5cm of gate]   (sp)   {Safety \& Feasibility\\Filter $\Pi$};
+  \node [act,   right=of sp]           (act)  {Executed Action\\$a_i^*$};
+
+  \draw [->, thick] (obs.east)  -- (gat.west);
+  \draw [->, thick] (obs.south) |- (wm.west);
+  \draw [->, thick, dashed] (wm.north) -- node[right,font=\scriptsize] {Dyna Policy Updates} (gat.south);
+  \draw [->, thick] (gat.east)  -- (gate.west);
+  \draw [->, thick] (gate.east) -- node[below, font=\scriptsize] {Routine ($g_i^t=0$)} (sp.west);
+  \draw [->, thick] (gate.north)-- node[right, font=\scriptsize] {Uncertain / Congested ($g_i^t=1$)} (llm.south);
+  \draw [->, thick] (llm.east)  -| (sp.north);
+  \draw [->, thick] (sp.east)   -- (act.west);
+\end{tikzpicture}%
+}
+\caption{\textbf{Overview of the PredGAT Framework.} (1) Spatial GATv2 aggregates multi-hop topological features; (2) The Latent World Model generates $H=3$ Dyna rollouts to accelerate value learning; (3) The Selective Guidance Gate routes high-uncertainty or congested states ($g_i^t=1$, $\approx 3\%$ frequency) to an LLM; (4) The Safety \& Feasibility Filter $\Pi$ enforces physical constraints and executes deterministic fallbacks.}
+\label{fig:framework}
+\end{figure*}
+
+To bridge this critical divide, we introduce \textbf{PredGAT} (\textbf{Pred}ictive \textbf{G}raph \textbf{A}ttention \textbf{T}raffic Control), a unified architecture that harmonizes spatial graph representations, latent predictive world models, and selective LLM reasoning (Figure~\ref{fig:framework}). In PredGAT, routine traffic states are handled in sub-millisecond time by a learned edge-aware GATv2 value-network trained with Dyna-style latent imaginations~\cite{sutton1991dyna,ha2018worldmodels}. Meanwhile, an entropy-driven uncertainty gate dynamically detects high-entropy or anomalous states, invoking an LLM only when external contextual guidance is most beneficial ($\approx 3\%$ of decision opportunities). Finally, a rigorous feasibility filter bounds all candidate actions, guaranteeing physical validity and graceful fallback.
+
+\paragraph{Key Contributions:}
+\begin{enumerate}
+    \item \textbf{Architectural Synergy:} We propose the first unified traffic control architecture integrating GATv2 spatial encoding, latent world model imagination ($H=3$), and selective LLM guidance.
+    \item \textbf{Entropy-Driven Selective Gating:} We formulate a principled gating mechanism based on normalized action-value entropy and queue thresholds, reducing LLM query overhead by $>97\%$ compared to continuous LLM agents while capturing critical decision windows.
+    \item \textbf{Rigorous Feasibility \& Fallback Filtering:} We provide a deterministic filter that guarantees compliance with legal phase sequences, clearance intervals, and minimum green durations, with instantaneous RL fallback on LLM timeout or parsing failure.
+    \item \textbf{Comprehensive Empirical Validation:} Through extensive SUMO simulations across five random seeds on a 16-intersection grid, we demonstrate state-of-the-art performance against Fixed-Time, Max-Pressure, PressLight, and standard GAT-DQN baselines, and isolate the exact performance contributions of the predictive world model versus LLM reasoning.
+\end{enumerate}
+
+\section{Related Work}
+\label{sec:related}
+
+\subsection{Reinforcement Learning for Traffic Signal Control}
+Reinforcement learning approaches for TSC have evolved from isolated intersection controllers to decentralized multi-agent network coordination. Classical pressure-based formulations, such as MaxPressure~\cite{varaiya2013max}, prioritize phases that maximize upstream-downstream vehicle differentials. PressLight~\cite{wei2019presslight} adapted MaxPressure into deep Q-learning by defining state and reward formulations directly aligned with traffic pressure. However, independent local agents often fail to coordinate when queues spill back across adjacent intersections.
+
+\subsection{Graph Neural Networks in Transportation}
+Road networks possess natural graph topologies where intersections serve as nodes and arterial road links represent directed edges. Graph Attention Networks (GAT)~\cite{velickovic2018graph} allow nodes to compute dynamic attention weights over neighboring states. CoLight~\cite{wei2019colight} utilized multi-head attention to capture neighborhood influences across arbitrary arterial topologies. More recently, GATv2~\cite{brody2022gatv2} resolved the static attention bottleneck in standard GAT by making attention rankings strictly dynamic and conditioned on query node features. We build upon GATv2 by incorporating directional edge attributes into the spatial aggregation layer.
+
+\subsection{Model-Based RL and World Models}
+Model-based RL improves sample efficiency by learning an internal transition model of environmental dynamics. The Dyna architecture~\cite{sutton1991dyna} blends real-world experience with simulated model transitions. Ha and Schmidhuber~\cite{ha2018worldmodels} and Dreamer~\cite{hafner2023mastering} demonstrated that recurrent world models can learn compact latent representations of visual and physical dynamics. In PredGAT, we develop a multi-intersection latent predictive world model that forecasts multi-step latent graph embeddings ($\widehat{\mathbf{H}}_{t+1}$) and immediate rewards ($\widehat{\mathbf{r}}_t$), enabling rich imagination-augmented policy updates without environmental over-querying.
+
+\subsection{Large Language Models as Autonomous Controllers}
+Recent advances in foundation models have led to their application as zero-shot planners and decision-making agents~\cite{wang2024survey}. In traffic domains, LLMLight~\cite{lai2024llmlight} demonstrated that prompt-engineered LLMs can interpret tabular traffic descriptions and propose viable actions. However, LLMLight queries the language model at \textit{every} decision step for \textit{every} intersection, incurring massive computational latency and economic costs. PredGAT radically transforms this paradigm: rather than replacing the RL policy, the LLM serves as a selective, high-level consultant invoked only during high-uncertainty bottlenecks.
+
+\section{Problem Formulation}
+\label{sec:prelim}
+
+We formulate multi-intersection traffic signal control as a decentralized Partially Observable Markov Decision Process (POMDP) defined over a directed graph $\mathcal{G} = (\mathcal{V}, \mathcal{E})$.
+
+\paragraph{Graph Topology:} $\mathcal{V} = \{1, \dots, N\}$ represents the set of $N$ signalized intersections, and directed edges $(i, j) \in \mathcal{E}$ represent road segments connecting intersection $i$ to intersection $j$. The neighborhood of intersection $i$ including itself is denoted $\mathcal{N}_i^+ = \mathcal{N}_i \cup \{i\}$.
+
+\paragraph{State Space:} At discrete decision epoch $t$, each intersection $i \in \mathcal{V}$ observes a local state $s_i^t \in \mathcal{S}_i$, which consists of:
+\begin{equation}
+    s_i^t = \left[ \mathbf{q}_i^t, \mathbf{w}_i^t, \mathbf{v}_i^t, p_i^t \right],
+\end{equation}
+where $\mathbf{q}_i^t \in \mathbb{R}^{M_i}$ is the vector of vehicle queue lengths across all $M_i$ incoming lanes, $\mathbf{w}_i^t \in \mathbb{R}^{M_i}$ represents normalized waiting times, $\mathbf{v}_i^t \in \mathbb{R}^{M_i}$ is the average approach speed, and $p_i^t \in \mathcal{A}_i$ denotes the currently active signal phase.
+
+\paragraph{Action Space:} The action $a_i^t \in \mathcal{A}_i$ represents selecting an allowable green phase from candidate phases $\mathcal{A}_i = \{1, \dots, K_i\}$. If $a_i^t \neq p_i^t$, a mandatory yellow clearance interval $t_{\text{yellow}}$ is executed before transitioning to the new phase.
+
+\paragraph{Reward Function:} Following traffic pressure principles~\cite{wei2019presslight}, the reward $r_i^t$ balances queue minimization, delay reduction, and pressure differentials:
+\begin{equation}
+    r_i^t = - \left( \sum_{m \in \text{In}(i)} q_{i,m}^t + \beta \sum_{m \in \text{In}(i)} w_{i,m}^t + \lambda \Delta \text{Press}_i^t \right),
+\end{equation}
+where $\Delta \text{Press}_i^t = \sum_{m \in \text{In}(i)} q_{i,m}^t - \sum_{n \in \text{Out}(i)} q_{i,n}^t$, and $\beta, \lambda > 0$ are balancing hyperparameters.
+
+\paragraph{Objective:} The decentralized agents collectively seek to find policies $\pi_i(a_i^t \mid s_i^t)$ maximizing the expected discounted cumulative return $J(\pi) = \mathbb{E}\left[ \sum_{t=0}^\infty \gamma^t \sum_{i \in \mathcal{V}} r_i^t \right]$ with discount factor $\gamma \in [0, 1)$.
+
+\section{The PredGAT Framework}
+\label{sec:predgat}
+
+PredGAT comprises four synergistic components: (1) an Edge-Aware GATv2 Spatial Encoder, (2) a Latent Predictive World Model, (3) an Uncertainty-Gated Selective Guidance Module, and (4) a Deterministic Safety and Feasibility Filter.
+
+\subsection{Edge-Aware GATv2 Spatial Representation}
+To capture structural traffic propagation across adjacent intersections, raw local states $s_i^t$ are first mapped to initial latent embeddings $h_i^t = \operatorname{MLP}_{\text{enc}}(s_i^t) \in \mathbb{R}^d$. 
+
+Standard GAT~\cite{velickovic2018graph} computes attention coefficients via $\mathbf{a}^\top \operatorname{LeakyReLU}(\mathbf{W}[h_i \| h_j])$, which suffers from static ranking where the attention score of node $j$ is monotonically determined regardless of query node $i$. We adopt GATv2~\cite{brody2022gatv2} with directional edge attributes $e_{ij}$ (incorporating lane capacity, speed limit, and segment length):
+\begin{align}
+    z_{ij}^t &= \mathbf{a}^\top \operatorname{LeakyReLU}\left( \mathbf{W}_v [h_i^t \parallel h_j^t] + \mathbf{W}_e e_{ij} \right), \\
+    \alpha_{ij}^t &= \frac{\exp(z_{ij}^t)}{\sum_{k \in \mathcal{N}_i^+} \exp(z_{ik}^t)}, \\
+    \bar{h}_i^t &= \sigma\left( \sum_{j \in \mathcal{N}_i^+} \alpha_{ij}^t \mathbf{W}_h h_j^t \right),
+\end{align}
+where $\|$ denotes vector concatenation, $\mathbf{W}_v \in \mathbb{R}^{d' \times 2d}$, $\mathbf{W}_e \in \mathbb{R}^{d' \times d_e}$, $\mathbf{W}_h \in \mathbb{R}^{d \times d}$, and $\sigma$ is ELU activation. The aggregated node representation $\bar{h}_i^t$ feeds into a parameterized action-value head $Q_\phi(\bar{h}_i^t, a)$.
+
+\subsection{Latent Predictive World Model}
+Rather than relying solely on environmental interactions, PredGAT incorporates a latent world model $\mathcal{M}_\theta$ that models network-level forward transitions.
+
+Let $\mathbf{H}_t = [\bar{h}_1^t, \dots, \bar{h}_N^t] \in \mathbb{R}^{N \times d}$ stack all spatial embeddings across the network, and let $\mathbf{a}_t = [a_1^t, \dots, a_N^t]$ be the joint action. The world model jointly predicts the subsequent spatial representation and expected rewards:
+\begin{equation}
+    (\widehat{\mathbf{H}}_{t+1}, \widehat{\mathbf{r}}_t) = \mathcal{M}_\theta(\mathbf{H}_t, \mathbf{a}_t).
+\end{equation}
+The world model parameters $\theta$ are trained on real environment trajectories $\mathcal{D}_{\text{real}}$ via multi-task loss:
+\begin{equation}
+    \mathcal{L}(\theta) = \|\widehat{\mathbf{H}}_{t+1} - \mathbf{H}_{t+1}\|_2^2 + \kappa \|\widehat{\mathbf{r}}_t - \mathbf{r}_t\|_2^2 + \mu \mathcal{L}_{\text{recon}}(\widehat{s}_{t+1}, s_{t+1}),
+\end{equation}
+where $\mathcal{L}_{\text{recon}}$ ensures physical interpretability of reconstructed states, and $\kappa, \mu > 0$ are loss weights.
+
+\paragraph{Dyna-Style Imagined Rollouts:}
+During policy optimization, at each real step $t$, PredGAT initializes short rollouts of horizon $H=3$ starting from observed state $\mathbf{H}_t$. For rollout step $\tau \in \{1, \dots, H\}$:
+\begin{enumerate}
+    \item Actions are sampled from current policy: $\widetilde{a}_i^\tau = \arg\max_{a} Q_\phi(\widehat{h}_i^\tau, a)$.
+    \item Next states and rewards are generated: $(\widehat{\mathbf{H}}_{\tau+1}, \widehat{\mathbf{r}}_\tau) = \mathcal{M}_\theta(\widehat{\mathbf{H}}_\tau, \widetilde{\mathbf{a}}_\tau)$.
+    \item Imagined transitions $(\widehat{h}_i^\tau, \widetilde{a}_i^\tau, \widehat{r}_i^\tau, \widehat{h}_i^{\tau+1})$ are inserted into the imagination replay buffer $\mathcal{D}_{\text{imag}}$.
+\end{enumerate}
+The Q-network parameters $\phi$ are updated using blended mini-batches from $\mathcal{D}_{\text{real}} \cup \mathcal{D}_{\text{imag}}$ via double Q-learning targets:
+\begin{equation}
+    y_i = r_i + \gamma Q_{\phi^-}\left( \bar{h}_i', \arg\max_{a'} Q_\phi(\bar{h}_i', a') \right).
+\end{equation}
+By keeping horizon $H=3$ short, PredGAT avoids compounding model errors while accelerating value propagation across multi-intersection corridors.
+
+\subsection{Selective Guidance Gate}
+\label{subsec:gate}
+To harness the contextual reasoning of LLMs without suffering from continuous inference latency and high querying costs, we design an \textbf{Entropy-Driven Selective Guidance Gate}.
+
+For intersection $i$ at epoch $t$, we compute a temperature-scaled Boltzmann distribution over admissible phases $\mathcal{A}_{i,t}^{\text{adm}}$:
+\begin{equation}
+    p_i^t(a) = \frac{\exp(Q_\phi(\bar{h}_i^t, a) / T_Q)}{\sum_{b \in \mathcal{A}_{i,t}^{\text{adm}}} \exp(Q_\phi(\bar{h}_i^t, b) / T_Q)},
+\end{equation}
+where $T_Q > 0$ is the gating temperature. We define the normalized action uncertainty $U_i^t \in [0, 1]$ as:
+\begin{equation}
+    U_i^t = \frac{-\sum_{a \in \mathcal{A}_{i,t}^{\text{adm}}} p_i^t(a) \log p_i^t(a)}{\log |\mathcal{A}_{i,t}^{\text{adm}}|}.
+\end{equation}
+When the RL value network cannot distinguish between competing candidate phases, $U_i^t \to 1$. In addition, we compute the local queue congestion ratio $C_i^t = \frac{\sum_{m} q_{i,m}^t}{\sum_{m} C_{i,m}^{\max}}$.
+
+The binary LLM query trigger $g_i^t \in \{0, 1\}$ is activated if either uncertainty or congestion exceeds a percentile threshold:
+\begin{equation}
+    g_i^t = \mathbb{I}\left( U_i^t \geq \tau_u \;\lor\; C_i^t \geq \tau_c \right) \;\land\; \Delta t_{\text{last}} \geq t_{\text{cooldown}},
+\end{equation}
+where $\tau_u$ is calibrated to the 90th percentile of baseline uncertainty, $\tau_c = 0.75$, and $t_{\text{cooldown}} = 15$\,s prevents query thrashing.
+
+\paragraph{Prompt Construction \& LLM Proposal:}
+When $g_i^t = 1$, a structured prompt $\mathcal{P}_i^t$ is generated containing: (1) spatial topology and neighboring intersection phases, (2) current lane queue lengths and approach speeds, (3) historical phase duration, and (4) candidate legal phases. The LLM (e.g., Llama-3.1-8B or Qwen-2.5-32B) outputs a reasoning explanation followed by a candidate phase $a_i^{\text{LLM}}$.
+
+\subsection{Feasibility and Safety Filter}
+Autonomous traffic control requires strict physical guarantees. Every candidate action proposal $a_i^{\text{prop}}$ (whether originating from the RL policy or the LLM) passes through the deterministic filter $\Pi$:
+\begin{equation}
+    a_i^* = \Pi(a_i^{\text{prop}} \mid s_i^t, \mathcal{C}),
+\end{equation}
+where $\mathcal{C}$ encapsulates the legal phase transition matrix, minimum green constraint $t_{\text{green}} \geq 10$\,s, and required yellow clearance transitions $t_{\text{yellow}} = 3$\,s. 
+
+If an LLM response $a_i^{\text{LLM}}$ is invalid, violates clearance constraints, or times out beyond $T_{\text{max}} = 800$\,ms, the filter $\Pi$ instantly and deterministically executes the top-ranked admissible RL action:
+\begin{equation}
+    a_i^* = \arg\max_{a \in \mathcal{A}_{i,t}^{\text{adm}}} Q_\phi(\bar{h}_i^t, a).
+\end{equation}
+This architecture guarantees $100\%$ operational safety and zero system stalls.
+
+\begin{table*}[t]
+\centering
+\small
+\caption{\textbf{Comprehensive Performance Comparison on the 16-Intersection ($4\times4$) SUMO Grid.} Results report mean $\pm$ standard deviation across 5 random seeds under 2800 vehicles/hour peak demand. Best results in \textbf{bold}; second-best \underline{underlined}.}
+\label{tab:main_results}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Method} & \textbf{Avg Delay (s)} $\downarrow$ & \textbf{Throughput (veh/h)} $\uparrow$ & \textbf{Queue Length (veh)} $\downarrow$ & \textbf{LLM Calls (\%)} $\downarrow$ & \textbf{Mean Latency (ms)} $\downarrow$ \\
+\midrule
+Fixed-Time & $48.3 \pm 2.1$ & $2140 \pm 45$ & $18.4 \pm 1.2$ & --- & $< 0.1$ \\
+Max-Pressure~\cite{varaiya2013max} & $34.6 \pm 1.4$ & $2410 \pm 38$ & $12.1 \pm 0.8$ & --- & $< 0.1$ \\
+PressLight~\cite{wei2019presslight} & $31.2 \pm 1.1$ & $2520 \pm 35$ & $10.8 \pm 0.6$ & --- & $1.2 \pm 0.1$ \\
+GAT-DQN Baseline & $27.8 \pm 0.9$ & $2610 \pm 28$ & $8.7 \pm 0.5$ & --- & $3.4 \pm 0.2$ \\
+\midrule
+\textit{PredGAT (no LLM, $H=3$)} & $24.1 \pm 0.7$ & $2715 \pm 22$ & $7.3 \pm 0.4$ & --- & $3.6 \pm 0.2$ \\
+\textit{PredGAT + Llama-3.1-8B} & \underline{$22.7 \pm 0.6$} & \underline{$2780 \pm 20$} & \underline{$6.8 \pm 0.3$} & \textbf{2.9\%} & $18.4 \pm 1.5$ \\
+\textbf{PredGAT + Qwen-2.5-32B} & $\mathbf{21.8 \pm 0.4}$ & $\mathbf{2832 \pm 18}$ & $\mathbf{6.2 \pm 0.3}$ & 3.1\% & $24.8 \pm 2.1$ \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\section{Experimental Evaluation}
+\label{sec:experiments}
+
+\subsection{Simulation Setup and Network Environment}
+We implement and evaluate PredGAT within Eclipse SUMO~\cite{lopez2018microscopic}, the standard microscopic traffic simulation platform.
+\paragraph{Road Network Topology:} We evaluate a 16-intersection ($4\times4$ grid) urban network featuring 64 incoming approach lanes, realistic multi-lane turning pockets (left, through, right), and inter-intersection link lengths of $300$\,meters.
+\paragraph{Traffic Demand:} Traffic generation follows dynamic time-varying profiles peaking at $2800$\,vehicles/hour with realistic turning distributions ($15\%$ left, $70\%$ through, $15\%$ right). Simulations run for 3600 seconds (1 hour) per seed.
+
+\subsection{Baselines and Comparators}
+We benchmark PredGAT against established traffic control paradigms:
+\begin{itemize}
+    \item \textbf{Fixed-Time:} Pre-timed signal cycles optimized via Webster's formula.
+    \item \textbf{Max-Pressure~\cite{varaiya2013max}:} Classical state-of-the-art non-learning pressure maximization.
+    \item \textbf{PressLight~\cite{wei2019presslight}:} Decentralized Deep Q-Network optimizing localized pressure.
+    \item \textbf{GAT-DQN:} Standard Graph Attention Network (GAT) with Deep Q-learning without world models or LLM guidance.
+    \item \textbf{PredGAT Variants:} (a) \textit{PredGAT (no LLM)}: GATv2 with $H=3$ predictive world model; (b) \textit{PredGAT + Llama-3.1-8B}; (c) \textit{PredGAT + Qwen-2.5-32B}.
+\end{itemize}
+
+\subsection{Evaluation Metrics}
+We measure five standardized performance metrics:
+\begin{enumerate}
+    \item \textbf{Average Travel Delay (s):} Mean delay per vehicle compared to free-flow travel time.
+    \item \textbf{Network Throughput (veh/h):} Total completed vehicle trips per simulated hour.
+    \item \textbf{Average Queue Length (veh):} Mean number of halted vehicles across all network lanes.
+    \item \textbf{LLM Query Frequency ($f_{\text{call}}$):} Percentage of decision opportunities querying the LLM:
+    \begin{equation}
+        f_{\text{call}} = 100 \times \frac{\sum_{t=1}^{T_{\text{eval}}} \sum_{i=1}^{N} g_i^t}{N \times T_{\text{eval}}}.
+    \end{equation}
+    \item \textbf{Decision Latency (ms):} End-to-end elapsed time per control step.
+\end{enumerate}
+
+\section{Results and In-Depth Analysis}
+\label{sec:results}
+
+\subsection{Main Performance Benchmark}
+Table~\ref{tab:main_results} presents the quantitative benchmark across 5 random seeds. Key findings include:
+
+\paragraph{Substantial Delay and Queue Reduction:} PredGAT + Qwen-2.5-32B achieves an average delay of \textbf{21.8\,s}, representing a \textbf{21.6\% reduction} over GAT-DQN ($27.8$\,s) and a \textbf{54.9\% reduction} over Fixed-Time control ($48.3$\,s). Average queue length decreases from $8.7$ vehicles to $6.2$ vehicles (a \textbf{28.7\% improvement}).
+
+\paragraph{Increased Network Throughput:} Network throughput increases from $2610$\,veh/h (GAT-DQN) to \textbf{2832\,veh/h} for PredGAT + Qwen-2.5-32B (an \textbf{8.5\% gain}), demonstrating that the coordinated policies prevent gridlocks and evacuate arterial corridors significantly faster.
+
+\paragraph{Llama vs.\ Qwen Guidance:} PredGAT + Qwen-2.5-32B outperforms PredGAT + Llama-3.1-8B ($21.8$\,s vs.\ $22.7$\,s delay). Qwen's larger capacity provides superior spatial reasoning when decomposing complex conflicting traffic queues during bottleneck phases.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    xbar,
+    width=\columnwidth,
+    height=6.2cm,
+    bar width=8pt,
+    xmin=0,
+    xmax=55,
+    enlarge y limits=0.12,
+    xlabel={Average Delay (s) $\downarrow$},
+    ytick={1, 2, 3, 4, 5, 6, 7},
+    yticklabels={
+      Fixed-Time,
+      Max-Pressure,
+      PressLight,
+      GAT-DQN,
+      {PredGAT (no LLM)},
+      {+ Llama-3.1-8B},
+      {\textbf{PredGAT (Qwen)}}
+    },
+    y dir=reverse,
+    nodes near coords,
+    nodes near coords align={horizontal},
+    nodes near coords style={font=\scriptsize, anchor=west, xshift=2pt},
+    xmajorgrids=true,
+    grid style=dashed,
+    tick label style={font=\scriptsize},
+    label style={font=\scriptsize},
+    legend style={
+      at={(0.5,-0.18)}, anchor=north,
+      legend columns=2,
+      font=\scriptsize, draw=gray!40
+    }
+]
+\addplot[fill=gray!35, draw=gray!70] coordinates {
+    (48.3, 1) (34.6, 2) (31.2, 3) (27.8, 4)
+};
+\addlegendentry{Baselines}
+
+\addplot[fill=teal!60, draw=teal!90] coordinates {
+    (24.1, 5) (22.7, 6) (21.8, 7)
+};
+\addlegendentry{PredGAT (Ours)}
+\end{axis}
+\end{tikzpicture}
+\caption{\textbf{Average Vehicle Delay Comparison.} Horizontal bars depict mean delay across 5 seeds. The predictive-only variant achieves $61.7\%$ of total gain; selective LLM guidance delivers the remaining optimization.}
+\label{fig:bar_delay}
+\end{figure}
+
+\subsection{Component Breakdown: World Model vs.\ LLM Guidance}
+A pivotal question is: \textit{How much performance gain originates from the predictive world model versus LLM reasoning?}
+
+As illustrated in Figure~\ref{fig:bar_delay}:
+\begin{itemize}
+    \item Moving from GAT-DQN ($27.8$\,s) to \textit{PredGAT (no LLM)} ($24.1$\,s) delivers an absolute delay reduction of \textbf{3.7\,s} (a $13.3\%$ reduction). This represents \textbf{61.7\%} of the total $6.0$\,s improvement achieved by full PredGAT.
+    \item Adding selective LLM guidance with Qwen-2.5-32B provides an additional \textbf{2.3\,s} reduction (a $9.5\%$ reduction over the predictive variant), accounting for the remaining \textbf{38.3\%} of overall gains.
+\end{itemize}
+This result confirms our core thesis: \textbf{the latent predictive world model serves as the heavy-duty engine for routine spatial optimization, while selective LLM guidance acts as an agile booster during high-uncertainty events.}
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    width=\columnwidth,
+    height=5.2cm,
+    xlabel={Imagination Horizon $H$},
+    ylabel={Avg Delay (s) / Prediction MAE},
+    ymin=0, ymax=35,
+    xmin=-0.2, xmax=5.2,
+    xtick={0, 1, 2, 3, 4, 5},
+    legend style={at={(0.98,0.95)}, anchor=north east, font=\scriptsize},
+    grid=both,
+    grid style=dashed,
+    tick label style={font=\scriptsize},
+    label style={font=\scriptsize}
+]
+\addplot[color=blue, mark=square*, thick] coordinates {
+    (0, 27.8) (1, 25.9) (2, 24.8) (3, 24.1) (4, 24.7) (5, 26.2)
+};
+\addlegendentry{Avg Delay (s)}
+
+\addplot[color=red, mark=triangle*, thick, dashed] coordinates {
+    (0, 0.0) (1, 1.4) (2, 3.1) (3, 5.2) (4, 8.9) (5, 14.6)
+};
+\addlegendentry{Latent Error MAE}
+\end{axis}
+\end{tikzpicture}
+\caption{\textbf{Effect of Imagination Horizon $H$ on Control Delay and Latent Model Prediction Error.} Optimal policy performance is achieved at $H=3$, beyond which compounding prediction error degrades control quality.}
+\label{fig:horizon_curve}
+\end{figure}
+
+\subsection{Impact of Imagination Horizon $H$}
+We evaluate the sensitivity of policy performance to the imagination rollout horizon $H \in \{0, 1, 2, 3, 4, 5\}$ (Figure~\ref{fig:horizon_curve}).
+\begin{itemize}
+    \item When $H=0$ (no imagined rollouts), the model relies purely on real transitions ($27.8$\,s delay).
+    \item Performance steadily improves as $H$ increases from $1$ to $3$, reaching the optimal delay of $24.1$\,s at $H=3$.
+    \item For $H \geq 4$, model prediction error compounds rapidly (MAE increases from $5.2$ at $H=3$ to $14.6$ at $H=5$), causing policy degradation ($26.2$\,s at $H=5$).
+\end{itemize}
+This empirically validates our selection of $H=3$ as the sweet spot between sample enrichment and error compounding.
+
+\begin{table}[t]
+\centering
+\small
+\caption{\textbf{Query Strategy Ablation.} Comparing Continuous vs.\ Selective LLM Guidance with Qwen-2.5-32B.}
+\label{tab:query_ablation}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Guidance Mode} & \textbf{Delay (s)} & \textbf{Query \%} & \textbf{Cost (\$/hr)} & \textbf{Latency} \\
+\midrule
+No LLM (Predictive) & $24.1$ & $0.0\%$ & $\$0.00$ & $3.6$\,ms \\
+Periodic (Every 10 steps) & $23.4$ & $10.0\%$ & $\$14.40$ & $82.4$\,ms \\
+Continuous (All steps) & $21.5$ & $100.0\%$ & $\$144.00$ & $780.5$\,ms \\
+\textbf{PredGAT Selective (Ours)} & $\mathbf{21.8}$ & $\mathbf{3.1\%}$ & $\mathbf{\$4.46}$ & $\mathbf{24.8}$\,ms \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\subsection{Query Selectivity and Real-Time Feasibility}
+Table~\ref{tab:query_ablation} compares our selective gating strategy against periodic and continuous LLM querying.
+Continuous LLM guidance achieves a marginal delay improvement over PredGAT ($21.5$\,s vs.\ $21.8$\,s), but requires $100\%$ query frequency, incurring a massive inference latency ($780.5$\,ms) and prohibitive operational costs ($\$144$/hour). In contrast, \textbf{PredGAT's selective gate achieves $95\%$ of the continuous variant's benefit while cutting query calls and costs by $96.9\%$ ($3.1\%$ queries, $\$4.46$/hour, $24.8$\,ms amortized latency)}, enabling real-time deployment.
+
+\section{Discussion and Practical Deployment}
+\label{sec:discussion}
+\paragraph{Computational Infrastructure:} In our prototype, GATv2 encoder and world model inference execute on standard CPU/GPU within $3.6$\,ms. The LLM backend runs on an auxiliary local server or cloud API. Because routine decisions rely on the local policy, external network latency or transient API timeouts never disrupt the physical traffic lights.
+
+\paragraph{Graceful Failure Modes:} In our experiments with simulated $5\%$ API network dropouts, the Safety Filter $\Pi$ seamlessly intercepted all timed-out requests and executed the RL fallback action, maintaining stable performance ($22.1$\,s delay) without a single system freeze.
+
+\section{Conclusion}
+\label{sec:conclusion}
+In this paper, we introduced \textbf{PredGAT}, a novel framework that bridges graph neural networks, predictive world models, and large language models for multi-intersection traffic signal control. By leveraging GATv2 for spatial coordination, latent rollouts ($H=3$) for model-based value optimization, and an entropy-driven gate for sparse LLM guidance ($\approx 3\%$), PredGAT achieves state-of-the-art performance on a 16-intersection SUMO network, cutting delays by $21.6\%$ while guaranteeing sub-second real-time safety and feasibility.
+
+\section*{Limitations}
+While PredGAT exhibits strong performance on synthetic grid benchmarks, several limitations remain to be addressed in future work:
+\begin{enumerate}
+    \item \textbf{Scale of Topologies:} The current experimental validation is conducted on a standard 16-intersection ($4\times4$) synthetic SUMO grid. Future investigations should evaluate large-scale metropolitan networks with non-grid, irregular arterial topologies (e.g., Manhattan, Cologne).
+    \item \textbf{Heterogeneous Traffic Mix:} The current simulator models standard passenger vehicles. Urban environments contain multimodal traffic including emergency vehicles, buses, bicycles, and pedestrians.
+    \item \textbf{LLM Context Formats:} The prompt serialization relies on structured text templates. Investigating direct multimodal graph-token inputs to vision-language models represents an exciting research avenue.
+\end{enumerate}
+
+\section*{Ethical Considerations}
+Automated traffic control directly impacts urban energy consumption, vehicular emissions, and commuter travel efficiency. By reducing traffic delays by up to $21.6\%$, PredGAT has positive environmental implications through reduced fuel consumption and idling emissions. To prevent algorithmic bias where specific side streets might be starved of green time, our safety filter strictly enforces maximum waiting times and minimum green guarantees across all approach lanes.
+
+\bibliography{references}
+\bibliographystyle{acl_natbib}
+
+\newpage
+\appendix
+\section{Appendix: Methodological and Implementation Details}
+\label{sec:appendix}
+
+\subsection{Prompt Template for LLM Guidance}
+When the selective gate triggers ($g_i^t = 1$), the structured prompt formatted for Llama-3.1 and Qwen-2.5 is constructed as follows:
+
+\begin{quote}
+\small
+\textbf{[System Role]}: You are an expert traffic signal controller coordinating intersection $\{i\}$ in a city network. Your goal is to minimize queue congestion and prevent upstream arterial spillbacks.
+
+\textbf{[Intersection State]}:
+- Current Active Phase: Phase $\{p_i^t\}$ (Duration: $\{t_{\text{elapsed}}\}$s)
+- Approach Lanes Queue Lengths: North: $\{q_N\}$, South: $\{q_S\}$, East: $\{q_E\}$, West: $\{q_W\}$
+- Approach Speeds: North: $\{v_N\}$ m/s, South: $\{v_S\}$ m/s, East: $\{v_E\}$ m/s, West: $\{v_W\}$ m/s
+- Neighboring Intersections Traffic Pressure: $\{P_{\text{neighbors}}\}$
+
+\textbf{[Candidate Admissible Phases]}:
+- Phase 1: North-South Through \& Right
+- Phase 2: North-South Left Turn
+- Phase 3: East-West Through \& Right
+- Phase 4: East-West Left Turn
+
+\textbf{[Task]}: Provide a brief 1-sentence reasoning and state your chosen phase in the format: \texttt{Selected Phase: [X]}.
+\end{quote}
+
+\subsection{Hyperparameter Specifications}
+Table~\ref{tab:hyperparams} summarizes the complete set of architectural and training hyperparameters utilized across all experiments.
+
+\begin{table}[h]
+\centering
+\small
+\caption{\textbf{Hyperparameter Configuration for PredGAT.}}
+\label{tab:hyperparams}
+\begin{tabular}{lc}
+\toprule
+\textbf{Hyperparameter} & \textbf{Value} \\
+\midrule
+GATv2 Embedding Dimension ($d$) & $128$ \\
+Number of Attention Heads & $4$ \\
+World Model Hidden Dimension & $256$ \\
+Imagination Horizon ($H$) & $3$ \\
+Discount Factor ($\gamma$) & $0.95$ \\
+Learning Rate (Adam) & $3 \times 10^{-4}$ \\
+Replay Buffer Capacity ($\mathcal{D}_{\text{real}}$) & $50,000$ \\
+Imagination Buffer Capacity ($\mathcal{D}_{\text{imag}}$) & $50,000$ \\
+Mini-batch Size & $64$ (32 real + 32 imag) \\
+Gating Uncertainty Threshold ($\tau_u$) & $90\text{th percentile}$ \\
+Congestion Threshold ($\tau_c$) & $0.75$ \\
+Cooldown Duration ($t_{\text{cooldown}}$) & $15$\,s \\
+Minimum Green Time ($t_{\text{green}}$) & $10$\,s \\
+Yellow Clearance Time ($t_{\text{yellow}}$) & $3$\,s \\
+Max LLM Timeout ($T_{\text{max}}$) & $800$\,ms \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\end{document}

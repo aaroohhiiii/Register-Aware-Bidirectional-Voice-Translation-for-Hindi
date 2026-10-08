@@ -1,6 +1,33 @@
-torch==2.7.1
-transformers==5.17.0
-soundfile==0.14.0
-librosa==1.0.0
-indic-nlp-library==0.92
-stanza==1.14.0
+# Core dependencies for the Register-Aware Hindi TTS/ASR project.
+# Install into the project venv:
+#   tts-env\Scripts\pip install -r requirements.txt
+
+# ── PyTorch (CPU wheel; omit +cpu suffix for CUDA/MPS) ───────────────────────
+torch>=2.2.0
+
+# ── HuggingFace stack ─────────────────────────────────────────────────────────
+transformers>=4.40.0
+huggingface_hub>=0.22.0
+
+# ── Parler TTS (local Hindi voice) ───────────────────────────────────────────
+# Install directly from GitHub (no PyPI release yet):
+#   tts-env\Scripts\pip install git+https://github.com/huggingface/parler-tts.git
+parler_tts>=0.1.0
+
+# ── Audio I/O & Recording ─────────────────────────────────────────────────────
+soundfile>=0.12.1
+librosa>=0.10.0
+sounddevice>=0.5.0
+
+# ── HTTP client (Timbre cloud backend) ────────────────────────────────────────
+requests>=2.31.0
+
+# ── Config / secrets ──────────────────────────────────────────────────────────
+python-dotenv>=1.0.0
+
+# ── NLP utilities & Evaluation ────────────────────────────────────────────────
+indic-nlp-library>=0.92
+stanza>=1.7.0
+jiwer>=3.0.0
+pytest>=8.0.0
+gradio>=4.0.0

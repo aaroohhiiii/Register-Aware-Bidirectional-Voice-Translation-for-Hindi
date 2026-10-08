@@ -1,0 +1,61 @@
+% acl2023.sty - Official ACL Style File
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{acl2023}[2023/01/16 ACL 2023 proceedings style]
+
+\RequirePackage{times}
+\RequirePackage{latexsym}
+\RequirePackage{natbib}
+
+% Page dimensions - A4
+\setlength{\paperwidth}{21cm}
+\setlength{\paperheight}{29.7cm}
+\setlength{\textwidth}{16.0cm}
+\setlength{\textheight}{24.7cm}
+\setlength{\oddsidemargin}{-0.04cm}
+\setlength{\evensidemargin}{-0.04cm}
+\setlength{\topmargin}{-1.0cm}
+\setlength{\headheight}{0.0cm}
+\setlength{\headsep}{0.0cm}
+\setlength{\columnsep}{0.6cm}
+
+% Two columns
+\twocolumn
+\flushbottom
+\sloppy
+
+% Font sizes
+\def\normalsize{\@setsize\normalsize{13.2pt}\xipt\@xipt}
+\def\small{\@setsize\small{11.5pt}\xpt\@xpt}
+\def\footnotesize{\@setsize\footnotesize{10.5pt}\ixpt\@ixpt}
+\def\scriptsize{\@setsize\scriptsize{9.5pt}\viiipt\@viiipt}
+\def\tiny{\@setsize\tiny{8pt}\vipt\@vipt}
+\def\large{\@setsize\large{14pt}\xiipt\@xiipt}
+\def\Large{\@setsize\Large{16pt}\xivpt\@xivpt}
+\def\LARGE{\@setsize\LARGE{18pt}\xviipt\@xviipt}
+\def\huge{\@setsize\huge{22pt}\xxpt\@xxpt}
+\def\Huge{\@setsize\Huge{25pt}\xxvpt\@xxvpt}
+
+% Section formatting
+\def\section{\@startsection {section}{1}{\z@}{-2.0ex plus -0.5ex minus -.2ex}{1.5ex plus 0.3ex minus .2ex}{\large\bf\raggedright}}
+\def\subsection{\@startsection{subsection}{2}{\z@}{-1.8ex plus -0.5ex minus -.2ex}{0.8ex plus .2ex}{\normalsize\bf\raggedright}}
+\def\subsubsection{\@startsection{subsubsection}{3}{\z@}{-1.5ex plus -0.5ex minus -.2ex}{0.5ex plus .2ex}{\normalsize\bf\raggedright}}
+\def\paragraph{\@startsection{paragraph}{4}{\z@}{1.5ex plus 0.5ex minus .2ex}{-1em}{\normalsize\bf}}
+
+% Title & Abstract
+\def\maketitle{\par
+ \begingroup
+   \def\thefootnote{\fnsymbol{footnote}}
+   \def\@makefnmark{\hbox to 0pt{$^{\@thefnmark}$\hss}}
+   \twocolumn[\@maketitle] \@thanks
+ \endgroup
+ \setcounter{footnote}{0}
+ \let\maketitle\relax \let\@maketitle\relax
+ \gdef\@thanks{}\gdef\@author{}\gdef\@title{}\let\thanks\relax}
+
+\def\@maketitle{\vbox to 6.5cm{\hsize\textwidth
+ \linewidth\hsize \vfil \centering
+ {\LARGE\bf \@title \par} \vskip 1.5em {\large\bf \@author \par} \vfil}}
+
+\renewenvironment{abstract}{\centerline{\large\bf Abstract}\vspace{0.5ex}\begin{quote}\small}{\par\end{quote}\vskip 1ex}
+
+\bibliographystyle{acl_natbib}
