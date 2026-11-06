@@ -37,12 +37,18 @@ PARLER_DESCRIPTION = (
     "and almost no background noise."
 )
 
+# ── MMS TTS (local, facebook/mms-tts-hin) ────────────────────────────────────
+MMS_MODEL_ID = "facebook/mms-tts-hin"
+
 # ── Scenarios & Bidirectional Targets ─────────────────────────────────────────
-DEFAULT_SCENARIO = "rickshaw"
+# Four demo personas, one per tone, used in both directions. Keys and tiers
+# match scenario_lookup.json (checked in tests/test_directions.py).
+DEFAULT_SCENARIO = "friend"
 SCENARIOS = {
-    "rickshaw":     {"A_target": "formal", "B_target": "informal", "label": "Auto-rickshaw"},
-    "shopkeeper":   {"A_target": "formal", "B_target": "informal", "label": "Shopkeeper"},
-    "receptionist": {"A_target": "formal", "B_target": "informal", "label": "Clinic receptionist"},
+    "friend":       {"A_target": "Full Informal",     "B_target": "Full Informal",     "label": "Friend"},
+    "auto_driver":  {"A_target": "Respectful Casual", "B_target": "Respectful Casual", "label": "Auto driver"},
+    "receptionist": {"A_target": "Formal",            "B_target": "Formal",            "label": "Receptionist"},
+    "doctor":       {"A_target": "Full Formal",       "B_target": "Full Formal",       "label": "Doctor"},
 }
 
 # ── UI voice list ─────────────────────────────────────────────────────────────

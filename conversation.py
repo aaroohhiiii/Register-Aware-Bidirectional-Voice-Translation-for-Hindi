@@ -7,7 +7,7 @@ run_conversation(turns, scenario=None, asr_backend=None, tts_backend=None,
 
 CLI Usage
 ---------
-    python conversation.py --scenario rickshaw --turns A:clips/c01.wav B:clips/c02.wav [--no-tts]
+    python conversation.py --scenario auto_driver --turns A:clips/c01.wav B:clips/c02.wav [--no-tts]
 """
 
 from __future__ import annotations
@@ -66,7 +66,7 @@ def run_conversation(
     dict
         {"scenario": str, "turns": list[dict], "transcript": list[str]}
     """
-    scen_used = scenario or getattr(config, "DEFAULT_SCENARIO", "rickshaw")
+    scen_used = scenario or getattr(config, "DEFAULT_SCENARIO", "friend")
     turn_results: List[Dict[str, Any]] = []
     transcript_lines: List[str] = []
 
@@ -121,7 +121,7 @@ def run_conversation(
 
 def main():
     parser = argparse.ArgumentParser(description="Run dialogue turn sequence through the pipeline.")
-    parser.add_argument("--scenario", default=None, help="Scenario name (e.g. rickshaw, shopkeeper, receptionist)")
+    parser.add_argument("--scenario", default=None, help="Persona (friend, auto_driver, receptionist, doctor)")
     parser.add_argument("--turns", nargs="+", required=True, help="Turn specs in format DIR:path/to/clip.wav (e.g. A:c01.wav B:c02.wav)")
     parser.add_argument("--asr", choices=["whisper", "prisma"], default=None, help="ASR backend choice")
     parser.add_argument("--no-tts", action="store_true", help="Skip TTS synthesis")

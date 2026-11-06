@@ -78,6 +78,59 @@ class RegisterTransformerTests(unittest.TestCase):
             "आपने रोटी खा ली?",
         )
 
+    def test_imperative_agrees_with_converted_pronoun(self) -> None:
+        self.assertEqual(
+            transform(
+                "आप अपना बैग पीछे रखिए मैं आपको जल्दी स्टेशन तक पहुंचा दूंगा।",
+                "Respectful Casual",
+            ),
+            "तुम अपना बैग पीछे रखो मैं तुम्हें जल्दी स्टेशन तक पहुंचा दूंगा।",
+        )
+
+    def test_extended_imperatives_convert_across_tiers(self) -> None:
+        cases = {
+            "रखिए": ("रख", "रखो"),
+            "रुकिए": ("रुक", "रुको"),
+            "लीजिए": ("ले", "लो"),
+            "बोलिए": ("बोल", "बोलो"),
+            "सुनिए": ("सुन", "सुनो"),
+            "देखिए": ("देख", "देखो"),
+            "चलिए": ("चल", "चलो"),
+            "आइए": ("आ", "आओ"),
+            "जाइए": ("जा", "जाओ"),
+            "पढ़िए": ("पढ़", "पढ़ो"),
+            "लिखिए": ("लिख", "लिखो"),
+            "दिखाइए": ("दिखा", "दिखाओ"),
+            "बताइए": ("बता", "बताओ"),
+            "लाइए": ("ला", "लाओ"),
+            "खाइए": ("खा", "खाओ"),
+            "पीजिए": ("पी", "पियो"),
+            "रहिए": ("रह", "रहो"),
+            "उठिए": ("उठ", "उठो"),
+            "भेजिए": ("भेज", "भेजो"),
+            "मिलिए": ("मिल", "मिलो"),
+        }
+        for formal, (intimate, casual) in cases.items():
+            # जाइए is the one verb here that _has_imperative lists, so it
+            # also gains कृपया when converted up to Formal.
+            formal_output = "आप कृपया जाइए" if formal == "जाइए" else f"आप {formal}"
+            with self.subTest(formal=formal):
+                self.assertEqual(transform(f"आप {formal}", "Full Informal"), f"तू {intimate}")
+                self.assertEqual(transform(f"आप {formal}", "Respectful Casual"), f"तुम {casual}")
+                self.assertEqual(transform(f"तुम {casual}", "Formal"), formal_output)
+                self.assertEqual(transform(f"तू {intimate}", "Formal"), formal_output)
+
+    def test_short_stems_in_verb_phrases_are_not_imperatives(self) -> None:
+        cases = (
+            ("तू खाना खा रहा है", "Formal", "M", "आप खाना खा रहे हैं"),
+            ("तू बैग रख दे", "Respectful Casual", "M", "तुम बैग रख दो"),
+            ("तू चल सकता है", "Formal", "M", "आप चल सकते हैं"),
+            ("मैं जा रहा हूं", "Formal", "M", "मैं जा रहा हूं"),
+        )
+        for source, tier, gender, expected in cases:
+            with self.subTest(source=source, tier=tier):
+                self.assertEqual(transform(source, tier, gender), expected)
+
     def test_unknown_forms_follow_fallback_rule(self) -> None:
         # Lexical items outside the tables still follow graceful fallback.
         self.assertEqual(

@@ -49,12 +49,18 @@ LANGUAGE_CHOICES: List[str] = [
 
 # Direction labels shown in the UI
 DIRECTION_CHOICES: List[str] = [
-    "A: User -> Other",
-    "B: Other -> User",
+    "A: You to them",
+    "B: Them to you",
 ]
 
 # Target override choices
-TARGET_CHOICES: List[str] = ["Auto (from direction)", "formal", "informal"]
+TARGET_CHOICES: List[str] = [
+    "Auto (from direction)",
+    "Full Informal",
+    "Respectful Casual",
+    "Formal",
+    "Full Formal",
+]
 
 # Build scenario dropdown labels from config
 SCENARIO_LABELS: Dict[str, str] = {
@@ -117,7 +123,7 @@ def build_status_line(result: dict, cloud_on: bool = True) -> str:
     transform_ms = result.get("transform_ms", 0.0)
     normalize_ms = result.get("normalize_ms", 0.0)
 
-    tts_backend = result.get("tts_backend") or "—"
+    tts_backend = result.get("tts_backend") or "none"
     tts_ms = result.get("tts_ms", 0.0)
 
     total_ms = result.get("total_ms", 0.0)
@@ -127,9 +133,9 @@ def build_status_line(result: dict, cloud_on: bool = True) -> str:
     fallback_parts = []
     if result.get("fallback_used") or result.get("asr_fallback_reason"):
         reason = redact(result.get("asr_fallback_reason") or "")
-        fallback_parts.append(f"ASR→whisper ({reason})" if reason else "ASR fallback")
+        fallback_parts.append(f"ASR fell back to whisper ({reason})" if reason else "ASR fallback")
     if result.get("tts_fallback_used"):
-        fallback_parts.append(f"TTS→{tts_backend}")
+        fallback_parts.append(f"TTS fell back to {tts_backend}")
     fallback_str = ", ".join(fallback_parts) if fallback_parts else "none"
 
     parts = [
@@ -179,7 +185,7 @@ def friendly_error(result_or_exception: Any) -> str:
         return "The audio file could not be read. Try a different format (WAV is safest)."
 
     if "too_long_for_prisma" in err_lower or "too long" in err_lower:
-        return "Clip is over 60 seconds — Prisma supports up to 60 s. Trim the audio or switch to Whisper."
+        return "Clip is over 60 seconds. Prisma supports up to 60 s. Trim the audio or switch to Whisper."
 
     if "empty_asr_transcript" in err_lower or "empty transcript" in err_lower:
         return "No speech detected, please try again."
@@ -206,7 +212,7 @@ def friendly_error(result_or_exception: Any) -> str:
         return "Parler TTS failed. The app will try MMS as fallback."
 
     if "mms" in err_lower and "failed" in err_lower:
-        return "MMS TTS failed. All backends exhausted — check your environment."
+        return "MMS TTS failed. All backends exhausted; check your environment."
 
     if "transform_failed" in err_lower:
         return "Register transformation failed; the cleaned text was used instead."
@@ -241,7 +247,7 @@ def format_log(session_log: List[Dict]) -> str:
 
         lines.append(f"**Turn {turn_n}** [{direction}]")
         if err:
-            lines.append(f"- ⚠️ Error: {redact(str(err)[:120])}")
+            lines.append(f"- Error: {redact(str(err)[:120])}")
         else:
             lines.append(f"- **Heard:** {cleaned}")
             lines.append(f"- **Said:** {transformed}")
@@ -276,7 +282,7 @@ def process_turn(
     tts_backend     : "timbre", "parler", or "mms".
     voice           : Timbre voice name (ignored for local backends).
     language_mode   : "Auto (recommended)", "hi-IN", or "hi-en".
-    target_override : "Auto (from direction)", "formal", or "informal".
+    target_override : "Auto (from direction)" or one of the four exact tiers.
     cloud_on        : If False, force local-only mode (whisper ASR, no timbre TTS).
     session_log     : Mutable list of past turn dicts; a new entry is appended.
 
@@ -336,7 +342,7 @@ def process_turn(
     if target_override == "Auto (from direction)":
         target_register = None   # let direction/scenario logic decide
     else:
-        target_register = target_override.lower()  # "formal" or "informal"
+        target_register = target_override  # exact tier, e.g. "Full Formal"
 
     # ── Cloud-off adjustments ─────────────────────────────────────────────────
     effective_asr = asr_backend
@@ -405,7 +411,7 @@ def process_turn(
     script_status = result.get("script_status", "ok")
     if script_status in ("mixed", "latin"):
         ui["script_warning"] = (
-            "⚠️ Transcript contains Latin letters; "
+            "Transcript contains Latin letters; "
             "the register rules may not handle these words correctly."
         )
 

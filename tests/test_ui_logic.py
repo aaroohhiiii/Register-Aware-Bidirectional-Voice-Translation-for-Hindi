@@ -15,7 +15,7 @@ def _make_result(**overrides):
     base = {
         "audio_path": "clips/c01.wav",
         "direction": "A",
-        "scenario": "rickshaw",
+        "scenario": "friend",
         "target_source": "direction",
         "raw_text": "आप कहाँ जा रहे हैं",
         "script_status": "ok",
@@ -112,13 +112,13 @@ class TestBuildStatusLine(unittest.TestCase):
             asr_fallback_reason="Prisma HTTP 500",
         )
         line = self.build(result, cloud_on=True)
-        self.assertIn("ASR→whisper", line)
+        self.assertIn("ASR fell back to whisper", line)
         self.assertIn("Prisma HTTP 500", line)
 
     def test_tts_fallback_shown(self):
         result = _make_result(tts_fallback_used=True, tts_backend="parler")
         line = self.build(result, cloud_on=True)
-        self.assertIn("TTS→parler", line)
+        self.assertIn("TTS fell back to parler", line)
 
     def test_cloud_off_shown(self):
         line = self.build(_make_result(), cloud_on=False)
@@ -206,7 +206,7 @@ class TestProcessTurn(unittest.TestCase):
         ui = process_turn(
             audio_path="fake.wav",
             direction_label="A: User -> Other",
-            scenario_label="Auto-rickshaw",
+            scenario_label="Friend",
             asr_backend="whisper",
             tts_backend="timbre",
             voice="Nalini",
@@ -226,7 +226,7 @@ class TestProcessTurn(unittest.TestCase):
         process_turn(
             audio_path="fake.wav",
             direction_label="B: Other -> User",
-            scenario_label="Auto-rickshaw",
+            scenario_label="Friend",
             asr_backend="whisper",
             tts_backend="timbre",
             voice="Nalini",
@@ -245,17 +245,18 @@ class TestProcessTurn(unittest.TestCase):
         process_turn(
             audio_path="fake.wav",
             direction_label="A: User -> Other",
-            scenario_label="Auto-rickshaw",
+            scenario_label="Friend",
             asr_backend="whisper",
             tts_backend="timbre",
             voice="Nalini",
             language_mode="Auto (recommended)",
-            target_override="formal",
+            target_override="Full Formal",
             cloud_on=True,
             session_log=[],
         )
         call_kwargs = mock_pipeline.call_args[1]
-        self.assertEqual(call_kwargs["target_register"], "formal")
+        self.assertEqual(call_kwargs["target_register"], "Full Formal")
+        self.assertEqual(call_kwargs["scenario"], "friend")
 
     @patch("ui_logic.run_pipeline")
     def test_auto_target_passes_none(self, mock_pipeline):
@@ -264,7 +265,7 @@ class TestProcessTurn(unittest.TestCase):
         process_turn(
             audio_path="fake.wav",
             direction_label="A: User -> Other",
-            scenario_label="Auto-rickshaw",
+            scenario_label="Friend",
             asr_backend="whisper",
             tts_backend="timbre",
             voice="Nalini",
@@ -283,7 +284,7 @@ class TestProcessTurn(unittest.TestCase):
         process_turn(
             audio_path="fake.wav",
             direction_label="A: User -> Other",
-            scenario_label="Auto-rickshaw",
+            scenario_label="Friend",
             asr_backend="prisma",   # requested prisma
             tts_backend="parler",
             voice="Nalini",
@@ -303,7 +304,7 @@ class TestProcessTurn(unittest.TestCase):
         ui = process_turn(
             audio_path="fake.wav",
             direction_label="A: User -> Other",
-            scenario_label="Auto-rickshaw",
+            scenario_label="Friend",
             asr_backend="whisper",
             tts_backend="timbre",   # requested timbre
             voice="Nalini",
@@ -325,7 +326,7 @@ class TestProcessTurn(unittest.TestCase):
         process_turn(
             audio_path="fake.wav",
             direction_label="A: User -> Other",
-            scenario_label="Auto-rickshaw",
+            scenario_label="Friend",
             asr_backend="whisper",
             tts_backend="mms",
             voice="Nalini",
@@ -342,7 +343,7 @@ class TestProcessTurn(unittest.TestCase):
         ui = process_turn(
             audio_path=None,
             direction_label="A: User -> Other",
-            scenario_label="Auto-rickshaw",
+            scenario_label="Friend",
             asr_backend="whisper",
             tts_backend="timbre",
             voice="Nalini",
@@ -365,7 +366,7 @@ class TestProcessTurn(unittest.TestCase):
         ui = process_turn(
             audio_path="fake.wav",
             direction_label="A: User -> Other",
-            scenario_label="Auto-rickshaw",
+            scenario_label="Friend",
             asr_backend="whisper",
             tts_backend="timbre",
             voice="Nalini",
@@ -385,7 +386,7 @@ class TestProcessTurn(unittest.TestCase):
             ui = process_turn(
                 audio_path="fake.wav",
                 direction_label="A: User -> Other",
-                scenario_label="Auto-rickshaw",
+                scenario_label="Friend",
                 asr_backend="whisper",
                 tts_backend="timbre",
                 voice="Nalini",
@@ -410,7 +411,7 @@ class TestProcessTurn(unittest.TestCase):
         ui = process_turn(
             audio_path="fake.wav",
             direction_label="A: User -> Other",
-            scenario_label="Auto-rickshaw",
+            scenario_label="Friend",
             asr_backend="whisper",
             tts_backend="timbre",
             voice="Nalini",
@@ -429,7 +430,7 @@ class TestProcessTurn(unittest.TestCase):
         ui = process_turn(
             audio_path="fake.wav",
             direction_label="A: User -> Other",
-            scenario_label="Auto-rickshaw",
+            scenario_label="Friend",
             asr_backend="whisper",
             tts_backend="timbre",
             voice="Nalini",
@@ -455,7 +456,7 @@ class TestProcessTurn(unittest.TestCase):
         ui = process_turn(
             audio_path="fake.wav",
             direction_label="A: User -> Other",
-            scenario_label="Auto-rickshaw",
+            scenario_label="Friend",
             asr_backend="whisper",
             tts_backend="timbre",
             voice="Nalini",

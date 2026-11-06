@@ -3,7 +3,7 @@
 Public API
 ----------
 direction_to_target(direction: str, scenario: Optional[str] = None) -> str
-    Map a direction ("A" | "B") and scenario name to a target register ("formal" | "informal").
+    Map a direction ("A" | "B") and persona name to a target register (an exact tier or "informal").
 """
 
 from __future__ import annotations
@@ -26,7 +26,7 @@ def direction_to_target(direction: str, scenario: Optional[str] = None) -> str:
     Returns
     -------
     str
-        Target register string (e.g. "formal" or "informal").
+        Target register string (e.g. "Full Formal" or "informal").
 
     Raises
     ------
@@ -41,7 +41,7 @@ def direction_to_target(direction: str, scenario: Optional[str] = None) -> str:
         raise ValueError(f"Invalid direction: {direction!r}. Must be 'A' or 'B'.")
 
     scenarios = getattr(config, "SCENARIOS", {})
-    default_scen = getattr(config, "DEFAULT_SCENARIO", "rickshaw")
+    default_scen = getattr(config, "DEFAULT_SCENARIO", "friend")
     scen_key = (scenario or default_scen).strip().lower()
 
     if scen_key not in scenarios:

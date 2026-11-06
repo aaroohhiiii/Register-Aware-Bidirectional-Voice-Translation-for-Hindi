@@ -46,6 +46,9 @@ logger = logging.getLogger(__name__)
 # Standard register tier groupings
 _FORMAL_TIERS = {"Formal", "Full Formal", "Formal-Warm", "Reverse Formal", "formal"}
 _INFORMAL_TIERS = {"Full Informal", "Respectful Casual", "informal"}
+# Exact tier names (case-sensitive). Lowercase "formal"/"informal" are the
+# coarse groups; "Formal" is the single tier.
+_EXACT_TIERS = {"Full Informal", "Respectful Casual", "Formal", "Full Formal", "Formal-Warm", "Reverse Formal"}
 
 
 def _resolve_target_register(detected: str, target: Optional[str]) -> tuple[str, bool]:
@@ -55,6 +58,11 @@ def _resolve_target_register(detected: str, target: Optional[str]) -> tuple[str,
     -------
     tuple : (target_register_str, transform_skipped_bool)
     """
+    if target is not None and target.strip() in _EXACT_TIERS:
+        # An exact tier is only skipped when the speaker already used it.
+        exact = target.strip()
+        return exact, detected == exact
+
     if target is None:
         if detected in _FORMAL_TIERS:
             target_reg = "informal"
@@ -79,12 +87,16 @@ def _resolve_target_register(detected: str, target: Optional[str]) -> tuple[str,
 
 def _to_transform_tier(target_reg: str) -> str:
     """Map target_reg string to exact tier string expected by register_transformer.py."""
+    if target_reg.strip() in _EXACT_TIERS:
+        return target_reg.strip()
     tr = target_reg.strip().lower()
     if tr in ("informal", "full informal"):
         return "Full Informal"
     if tr == "respectful casual":
         return "Respectful Casual"
-    if tr in ("formal", "full formal"):
+    if tr == "full formal":
+        return "Full Formal"
+    if tr == "formal":
         return "Formal"
     if tr in ("formal-warm", "reverse formal"):
         # Match case
@@ -244,7 +256,9 @@ def run_pipeline(
     tgt_reg, skip_tr = _resolve_target_register(det_reg, resolved_target)
     result["target_register"] = tgt_reg
 
-    if det_reg == "unknown":
+    # With an exact tier we still transform when detection is unknown
+    # (e.g. no pronoun), so the persona's markers such as जी are applied.
+    if det_reg == "unknown" and tgt_reg not in _EXACT_TIERS:
         result["transform_skipped"] = True
         result["skip_reason"] = "register_unknown"
         result["transformed_text"] = cleaned_text
@@ -334,7 +348,7 @@ def main():
     parser.add_argument("--audio", required=True, help="Path to input audio file")
     parser.add_argument("--target", choices=["informal", "formal"], default=None, help="Target register")
     parser.add_argument("--direction", choices=["A", "B", "a", "b"], default=None, help="Direction A or B")
-    parser.add_argument("--scenario", default=None, help="Scenario name (e.g. rickshaw, shopkeeper, receptionist)")
+    parser.add_argument("--scenario", default=None, help="Persona (friend, auto_driver, receptionist, doctor)")
     parser.add_argument("--asr", choices=["whisper", "prisma"], default=None, help="ASR backend choice")
     parser.add_argument("--no-tts", action="store_true", help="Skip TTS synthesis")
     parser.add_argument("--out-dir", default="e2e_out", help="Output directory for audio and logs")

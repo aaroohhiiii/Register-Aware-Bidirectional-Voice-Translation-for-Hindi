@@ -64,11 +64,114 @@ IMPERATIVE_FORMS = {
         "casual_plural": "करो",
         "respectful_plural": "करें",
     },
+    "रखिए": {
+        "intimate_singular": "रख",
+        "casual_plural": "रखो",
+        "respectful_plural": "रखिए",
+    },
+    "रुकिए": {
+        "intimate_singular": "रुक",
+        "casual_plural": "रुको",
+        "respectful_plural": "रुकिए",
+    },
+    "लीजिए": {
+        "intimate_singular": "ले",
+        "casual_plural": "लो",
+        "respectful_plural": "लीजिए",
+    },
+    "बोलिए": {
+        "intimate_singular": "बोल",
+        "casual_plural": "बोलो",
+        "respectful_plural": "बोलिए",
+    },
+    "सुनिए": {
+        "intimate_singular": "सुन",
+        "casual_plural": "सुनो",
+        "respectful_plural": "सुनिए",
+    },
+    "देखिए": {
+        "intimate_singular": "देख",
+        "casual_plural": "देखो",
+        "respectful_plural": "देखिए",
+    },
+    "चलिए": {
+        "intimate_singular": "चल",
+        "casual_plural": "चलो",
+        "respectful_plural": "चलिए",
+    },
+    "आइए": {
+        "intimate_singular": "आ",
+        "casual_plural": "आओ",
+        "respectful_plural": "आइए",
+    },
+    "जाइए": {
+        "intimate_singular": "जा",
+        "casual_plural": "जाओ",
+        "respectful_plural": "जाइए",
+    },
+    "पढ़िए": {
+        "intimate_singular": "पढ़",
+        "casual_plural": "पढ़ो",
+        "respectful_plural": "पढ़िए",
+    },
+    "लिखिए": {
+        "intimate_singular": "लिख",
+        "casual_plural": "लिखो",
+        "respectful_plural": "लिखिए",
+    },
+    "दिखाइए": {
+        "intimate_singular": "दिखा",
+        "casual_plural": "दिखाओ",
+        "respectful_plural": "दिखाइए",
+    },
+    "बताइए": {
+        "intimate_singular": "बता",
+        "casual_plural": "बताओ",
+        "respectful_plural": "बताइए",
+    },
+    "लाइए": {
+        "intimate_singular": "ला",
+        "casual_plural": "लाओ",
+        "respectful_plural": "लाइए",
+    },
+    "खाइए": {
+        "intimate_singular": "खा",
+        "casual_plural": "खाओ",
+        "respectful_plural": "खाइए",
+    },
+    "पीजिए": {
+        "intimate_singular": "पी",
+        "casual_plural": "पियो",
+        "respectful_plural": "पीजिए",
+    },
+    "रहिए": {
+        "intimate_singular": "रह",
+        "casual_plural": "रहो",
+        "respectful_plural": "रहिए",
+    },
+    "उठिए": {
+        "intimate_singular": "उठ",
+        "casual_plural": "उठो",
+        "respectful_plural": "उठिए",
+    },
+    "भेजिए": {
+        "intimate_singular": "भेज",
+        "casual_plural": "भेजो",
+        "respectful_plural": "भेजिए",
+    },
+    "मिलिए": {
+        "intimate_singular": "मिल",
+        "casual_plural": "मिलो",
+        "respectful_plural": "मिलिए",
+    },
 }
 
 # Reverse entries allow cross-tier conversion in either direction.  The short
 # intimate forms are context-checked below because some can also be lexical
 # stems in a larger verb phrase.
+AMBIGUOUS_SHORT_IMPERATIVES = frozenset(
+    _forms["intimate_singular"] for _forms in IMPERATIVE_FORMS.values()
+)
 for _formal, _forms in list(IMPERATIVE_FORMS.items()):
     for _variant in set(_forms.values()):
         IMPERATIVE_FORMS.setdefault(_variant, _forms)
@@ -320,14 +423,13 @@ def _replace_verbs(words: list[str], target_tier: str, gender: str) -> list[str]
                     "respectful_plural": "हैं",
                 }[agreement_class]
 
-    ambiguous_short_imperatives = {"समझा", "दे", "कर", "बैठ"}
     for index, word in enumerate(result):
         forms = IMPERATIVE_FORMS.get(word)
         if forms is not None:
             following = result[index + 1] if index + 1 < len(result) else None
             previous = result[index - 1] if index else None
             if (
-                word in ambiguous_short_imperatives
+                word in AMBIGUOUS_SHORT_IMPERATIVES
                 and following is not None
                 and following not in PUNCTUATION
                 and previous != "मत"
