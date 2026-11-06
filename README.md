@@ -1,5 +1,9 @@
 # Register-Aware Bidirectional Voice Translation for Hindi
 
+> **Solution pitch (1 page): [PITCH.md](PITCH.md)** · Speech runs on Gnani AI **Prisma** (ASR) and **Timbre** (TTS).
+>
+> **Quick start:** add `GNANI_API_KEY` to `.env`, then run `python app.py` and open http://127.0.0.1:7860.
+
 ## 1. Project overview
 
 This project is a proof-of-concept Hindi voice translation system designed to
