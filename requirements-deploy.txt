@@ -1,8 +1,7 @@
-# Server-only dependencies for the Render deployment (see Dockerfile).
+# Server dependencies for the Hugging Face Spaces deployment (see Dockerfile).
 # Differs from requirements.txt:
 #   - torch is installed separately from the CPU-only wheel index (much smaller)
 #   - no sounddevice (needs PortAudio; the browser mic is used via Gradio)
-#   - no parler_tts (too large for the instance's RAM; TTS falls back timbre -> mms)
 #   - no test/eval tools (pytest, jiwer)
 transformers==4.46.1
 huggingface_hub==0.36.2
@@ -15,3 +14,4 @@ python-dotenv==1.2.4
 indic-nlp-library==0.92
 stanza==1.15.0
 gradio==6.17.3
+parler_tts @ git+https://github.com/huggingface/parler-tts.git
