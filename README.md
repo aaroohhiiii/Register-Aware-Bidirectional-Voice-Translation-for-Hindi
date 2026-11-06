@@ -10,60 +10,98 @@ This project is a proof-of-concept Hindi voice translation system designed to
 preserve the social register appropriate to the person being addressed. Hindi
 changes pronouns, verb agreement, imperatives, honorifics, and address terms
 depending on relationships such as friend, teacher, elder relative, customer,
-or auto driver. The system converts Hindi speech to text, maps a user-selected
-scenario to one of six register tiers, and deterministically rewrites the text
-for that relationship. The current repository contains a working MPS-based ASR
-baseline and the tested register-selection, tokenization, transformation, and
-detection layers. **Text cleanup, TTS, the bidirectional conversation
-orchestrator, and a one-command end-to-end entry point have not been
-implemented yet**, so audio-to-audio execution is not currently available from
-this checkout.
+or auto driver. The system converts Hindi speech to text with **Gnani Prisma**,
+maps the user-selected scenario and conversation direction to one of six
+register tiers, deterministically rewrites the text for that relationship, and
+speaks the result with **Gnani Timbre**. A Gradio web app runs the full
+audio-to-audio loop for both sides of a conversation and keeps a turn-by-turn log.
 
-## 2. Architecture diagram
+## 2. Architecture
 
-The intended end-to-end architecture is:
+### 2.1 End-to-end flow
 
-```text
-Hindi audio in
-      |
-      v
-ASR: vasista22/whisper-hindi-small             [implemented: asr_baseline.py]
-      |
-      v
-Raw Hindi transcript
-      |
-      v
-Text cleanup                                      [not yet implemented]
-      |
-      +---------------------> detect_register()   [diagnostic only]
-      |                              |
-      |                              +--> evidence/confidence display or logs
-      |                                   NEVER overrides the selected scenario
-      v
-User selects who they are speaking to in the UI  [required primary control]
-      |
-      v
-scenario_to_dial(selected_scenario_key)
-      |
-      v
-Authoritative target tier
-      |
-      v
-transform(sentence, target_tier, gender, ...)
-      |
-      v
-Register-adjusted Hindi text
-      |
-      v
-Hindi TTS                                        [not yet implemented]
-      |
-      v
-Hindi audio out
+```mermaid
+flowchart TD
+    MIC["🎙️ Hindi speech<br/>(record or upload in the Gradio UI — app.py)"]
+    UI["User picks<br/>• Direction: A (you → them) / B (them → you)<br/>• Scenario: Friend · Auto driver · Receptionist · Doctor<br/>• optional tone override, voice, language"]
+
+    MIC --> PREP["Audio prep — asr.prepare_audio<br/>mono · 16 kHz · PCM-16 WAV"]
+    PREP --> PRISMA["☁️ Gnani Prisma STT<br/>api.vachana.ai/stt/v3 · hi-IN"]
+    PRISMA -. "offline / error fallback" .-> WHISPER["Whisper Hindi small<br/>(local)"]
+    PRISMA --> RAW["Raw Hindi transcript"]
+    WHISPER --> RAW
+
+    RAW --> SCRIPT["script_check.py<br/>flags Latin / mixed-script words"]
+    SCRIPT --> CLEAN["cleanup.py<br/>fillers · repetitions · punctuation"]
+    CLEAN --> DETECT["register_detector.py<br/>detected tier + evidence<br/>(diagnostic — never overrides scenario)"]
+
+    UI --> DIR["directions.py + scenario_lookup.json<br/>direction × scenario → target tier"]
+    DETECT --> RESOLVE["pipeline.py<br/>resolve target · skip if already in target tier"]
+    DIR --> RESOLVE
+
+    RESOLVE --> TOK["hindi_tokenizer.py<br/>Stanza Hindi tokenize + POS"]
+    TOK --> TRANSFORM["register_transformer.py<br/>pronouns · verb agreement · imperatives<br/>honorifics · address terms"]
+    RULES[("pronoun_rules.json<br/>verb_rules.json<br/>address_term_rules.json")] --> TRANSFORM
+
+    TRANSFORM --> NORM["normalize.py<br/>numbers · currency · time · % → spoken Hindi"]
+    NORM --> LANG["language_hint.py<br/>hi-IN or hi-en (code-mixed)"]
+    LANG --> TIMBRE["☁️ Gnani Timbre TTS<br/>timbre-v2.5 · voice Nalini · 24 kHz WAV"]
+    TIMBRE -. "offline / error fallback" .-> LOCALTTS["Parler → MMS<br/>(local)"]
+    TIMBRE --> OUT["🔊 Register-adjusted Hindi speech"]
+    LOCALTTS --> OUT
+
+    OUT --> LOG["ui_logic.py<br/>stage-by-stage output · latency status line · conversation log"]
 ```
 
-The planned bidirectional application applies this same sequence independently
-to each conversation direction. No bidirectional state/orchestration module is
-present yet.
+### 2.2 Stage by stage
+
+| # | Stage | Module | What it does |
+|---|---|---|---|
+| 1 | Input | `app.py`, `ui_logic.py` | Gradio UI: record or upload audio, choose direction (A/B), scenario, tone override, Timbre voice and language. |
+| 2 | Audio prep | `asr.py` | Converts any input to mono 16 kHz PCM-16 WAV; rejects clips over 60 s for Prisma. |
+| 3 | Speech-to-text | `asr.py` → **Gnani Prisma** | `POST api.vachana.ai/stt/v3` with `language_code=hi-IN`. Falls back to local Whisper (`vasista22/whisper-hindi-small`) if the cloud call fails or cloud mode is off. |
+| 4 | Script check | `script_check.py` | Flags Latin or mixed-script words that the register rules can't handle and warns the user. |
+| 5 | Cleanup | `cleanup.py` | Removes fillers and accidental repetitions (keeping valid reduplication like धीरे धीरे) and fixes punctuation. |
+| 6 | Register detection | `register_detector.py` | Classifies the sentence into one of six tiers using pronoun, verb and honorific evidence. Shown for transparency only. |
+| 7 | Target selection | `directions.py`, `scenario_dial.py`, `scenario_lookup.json` | Direction × scenario gives the authoritative target tier; the user's tone override wins if set. |
+| 8 | Tokenize + tag | `hindi_tokenizer.py` | Stanza Hindi tokenization and POS tagging feed the transformer. |
+| 9 | Transformation | `register_transformer.py` + `*_rules.json` | Rewrites pronouns (तू / तुम / आप), verb agreement and imperatives (बैठ जा → बैठ जाइए), and adds or removes honorifics and address terms (जी, सर, कृपया). |
+| 10 | TTS normalization | `normalize.py` | Turns numbers, currency, times and percentages into spoken Hindi words. |
+| 11 | Language hint | `language_hint.py` | Picks `hi-IN`, or `hi-en` for code-mixed sentences. |
+| 12 | Text-to-speech | `tts.py` → **Gnani Timbre** | `POST api.vachana.ai/api/v1/tts/inference`, model `timbre-v2.5`, voice *Nalini*, speed 1.0. Falls back to local Parler, then MMS. |
+| 13 | Output + log | `ui_logic.py` | Plays the audio, shows every intermediate stage, per-stage latency, and appends the turn to the conversation log. |
+
+### 2.3 Register tiers and scenarios
+
+Six tiers, from most casual to most formal: **Full Informal** (तू), **Respectful
+Casual** (तुम), **Formal** (आप), **Full Formal** (आप + जी/सर), plus two
+special tiers: **Formal-Warm** (close but deferential, e.g. a grandparent, with
+kinship address like दादी जी) and **Reverse Formal** (you serving a customer, so
+you owe the deference).
+
+| Scenario | Target tier | Example: *तू कहाँ जा रहा है?* becomes |
+|---|---|---|
+| Friend | Full Informal | तू कहाँ जा रहा है? |
+| Auto driver | Respectful Casual | तुम कहाँ जा रहे हो? |
+| Receptionist | Formal | आप कहाँ जा रहे हैं? |
+| Doctor | Full Formal | सर, आप कहाँ जा रहे हैं? |
+
+### 2.4 Bidirectional conversation
+
+Every turn runs through the same pipeline. **Direction A** (you → them) converts
+your speech into the register the listener expects; **Direction B** (them → you)
+converts their reply for you. `conversation.py` runs a whole multi-turn
+dialogue from the command line, and the web UI keeps the same history in its
+conversation log.
+
+### 2.5 Reliability and privacy
+
+- Both Gnani calls have timeouts, and every failure falls back to a local model,
+  so a turn still completes offline.
+- A failure in one stage never crashes the turn: detection, transformation and
+  normalization each fall back to passing the text through unchanged, and the UI
+  shows a plain-language error.
+- `GNANI_API_KEY` is read from `.env` and redacted from every log line and UI message.
 
 ## 3. Prerequisites
 
