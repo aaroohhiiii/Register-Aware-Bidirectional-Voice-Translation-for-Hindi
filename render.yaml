@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: hindi-register-translation
+    runtime: docker
+    plan: standard          # 2 GB RAM minimum for Whisper + MMS; use "pro" (4 GB) if it OOMs
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: GNANI_API_KEY
+        sync: false         # set in the Render dashboard, never committed
+      - key: APP_USERNAME
+        sync: false         # optional: set both to password-protect the app
+      - key: APP_PASSWORD
+        sync: false

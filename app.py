@@ -514,6 +514,17 @@ def main() -> None:
     else:
         server_name = "127.0.0.1"
 
+    # Hosted mode (Render and similar set $PORT): bind publicly on that port.
+    port_env = os.getenv("PORT", "").strip()
+    server_port = int(port_env) if port_env else None
+    if server_port is not None:
+        server_name = "0.0.0.0"
+
+    # Optional login gate so strangers can't spend the Gnani credits.
+    app_user = os.getenv("APP_USERNAME", "").strip()
+    app_pass = os.getenv("APP_PASSWORD", "").strip()
+    auth = (app_user, app_pass) if app_user and app_pass else None
+
     # Preload Whisper once at startup (blocking; ~3 s on first run)
     print("Loading Whisper ASR model — please wait...")
     try:
@@ -526,6 +537,8 @@ def main() -> None:
     # concurrency_limit=1 prevents double-clicks and concurrent model calls
     demo.queue(max_size=5).launch(
         server_name=server_name,
+        server_port=server_port,
+        auth=auth,
         share=False,
         show_error=False,          # don't expose raw Python tracebacks in browser
         theme=THEME,
